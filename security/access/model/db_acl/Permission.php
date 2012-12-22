@@ -1,0 +1,280 @@
+<?php
+/**
+ * Lithium: the most rad php framework
+ *
+ * @copyright     Copyright 2012, Union of RAD (http://union-of-rad.org)
+ * @license       http://opensource.org/licenses/bsd-license.php The BSD License
+ */
+
+namespace li3_access\security\access\model\db_acl;
+
+use lithium\util\Set;
+use RuntimeException;
+
+class Permission extends \lithium\data\Model {
+
+	/**
+	 * @see lithium\data\Model::_autoConfig()
+	 * @var array
+	 */
+	protected $_autoConfig = array(
+		'meta',
+		'schema',
+		'classes',
+		'query',
+		'finders',
+		'initializers',
+		'init',
+		'forbid'
+	);
+
+	/**
+	 * Class dependencies. For details on extending or replacing a class,
+	 * please refer to that class's API.
+	 *
+	 * @var array
+	 */
+	protected $_classes = array(
+		'aro' => 'li3_access\security\access\model\db_acl\Aro',
+		'aco' => 'li3_access\security\access\model\db_acl\Aco',
+		'privilege' => 'li3_access\security\access\model\db_acl\Privilege'
+	);
+
+	/**
+	 * Model belongsTo relations.
+	 *
+	 * @var array
+	 */
+	public $belongsTo = array('Aro', 'Aco');
+
+	/**
+	 * Forbid error message
+	 * @var string
+	 */
+	protected $_forbid = 'You are not permitted to access this area.';
+
+	/**
+	 * @var array $_error Last error message
+	 */
+	protected $_error = array();
+
+	/**
+	 * Get the acl array between an Aro and an Aco
+	 *
+	 * @param string $requester The requesting identifier (Aro).
+	 * @param string $controlled The controlled identifier (Aco).
+	 * @return array The permissions
+	 */
+	public static function acl($requester, $controlled) {
+		$self = static::_object();
+		$aro = $self->_classes['aro'];
+		$aco = $self->_classes['aco'];
+
+		if (!(($aroNode = $aro::node($requester)) && ($acoNode = $aco::node($controlled)))) {
+			return false;
+		}
+
+		$acl = static::find('first', array(
+				'conditions' => array(
+					key(static::relations('Aro')->key()) => $aroNode[0]['id'],
+					key(static::relations('Aco')->key()) => $acoNode[0]['id']
+				),
+				'return' => 'array'
+		));
+		if (isset($acl[0]['privileges'])) {
+			$acl[0]['privileges'] = json_decode($acl[0]['privileges'], true);
+		}
+
+		return array(
+			'aro' => $aroNode[0]['id'],
+			'aco' => $acoNode[0]['id'],
+			'acl' => isset($acl[0]) ? $acl[0]: array()
+		);
+	}
+
+	/**
+	 * Get all valid permission type
+	 *
+	 * @return array
+	 */
+	public static function privileges() {
+		$self = static::_object();
+		$privilege = $self->_classes['privilege'];
+		return $privilege::find('list');
+	}
+
+	/**
+	 * Checks permission access
+	 *
+	 * @param string $requester The requester identifier (Aro).
+	 * @param string $controlled The controlled identifier (Aco).
+	 * @return boolean Success (true if Aro has access to action in Aco, false otherwise)
+	 */
+	public static function check($requester, $controlled, $privileges = "*") {
+		$self = static::_object();
+		$aro = $self->_classes['aro'];
+		$aco = $self->_classes['aco'];
+
+		if (!(($aroNodes = $aro::node($requester)) && ($acoNodes = $aco::node($controlled)))) {
+			return false;
+		}
+
+		$inherited = array();
+		$required = $privileges == '*' ? static::privileges() : (array) $privileges;
+		$count = count($required);
+		$aro_id = key(static::relations('Aro')->key());
+		$aco_id = key(static::relations('Aco')->key());
+		$ids = Set::extract($acoNodes, '/'.$aco::meta('key'));
+		$left = $aco::actsAs('Tree', true, 'left');
+
+		foreach($aroNodes as $node) {
+			$id = $node[$aro::meta('key')];
+			if ($datas = static::_permQuery($id, $ids, $aro_id, $aco_id, $left)) {
+				foreach ($datas as $data) {
+					if(!$privileges = json_decode($data['privileges'], true)) {
+						break;
+					}
+					foreach ($required as $key) {
+						if (isset($privileges[$key])) {
+							if(!$privileges[$key]) {
+								$self->_error = array('message' => $self->_forbid);
+								return false;
+							} else {
+								$inherited[$key] = 1;
+							}
+						}
+					}
+					if (count($inherited) == $count) {
+						$self->_error = array();
+						return true;
+					}
+				}
+			}
+		}
+		$self->_error = array('message' => $self->_forbid);
+		return false;
+	}
+
+	/**
+	 * Get all permission access
+	 *
+	 * @param string $requester The requesting identifier (Aro).
+	 * @param string $controlled The controlled identifier (Aco).
+	 */
+	public static function get($requester, $controlled) {
+		$self = static::_object();
+		$aro = $self->_classes['aro'];
+		$aco = $self->_classes['aco'];
+
+		if (!(($aroNodes = $aro::node($requester)) && ($acoNodes = $aco::node($controlled)))) {
+			return false;
+		}
+
+		$privileges = array();
+		$aro_id = key(static::relations('Aro')->key());
+		$aco_id = key(static::relations('Aco')->key());
+		$left = $aco::actsAs('Tree', true, 'left');
+		$ids = Set::extract($acoNodes, '/'.$aco::meta('key'));
+
+		foreach($aroNodes as $node) {
+			$id = $node[$aro::meta('key')];
+			if ($datas = static::_permQuery($id, $ids, $aro_id, $aco_id, $left)) {
+				foreach ($datas as $data) {
+					$privileges = $privileges + (array) json_decode($data['privileges'], true);
+				}
+			}
+		}
+		return $privileges += array_fill_keys(static::privileges(), false);
+	}
+
+	/**
+	 * Load permissions query
+	 *
+	 * @param mixed $id The Aro id
+	 * @param array $ids The Aco ids
+	 * @param string $aro_id The name of the Aro foreign key
+	 * @param string $aco_id The name of the Aco foreign key
+	 * @param string $left The name of the left field name (Tree behavior config)
+	 * @return array Loaded permissions
+	 */
+	protected static function _permQuery($id, $ids, $aro_id, $aco_id, $left) {
+		return static::find('all', array(
+			'alias' => 'Permission',
+			'fields' => 'Permission',
+			'conditions' => array(
+				'Permission.' . $aro_id => $id,
+				'Permission.' . $aco_id => $ids
+			),
+			'order' => "Aco.{$left} DESC",
+			'with' => array('Aco' => array('alias' => 'Aco')),
+			'return' => 'array'
+		));
+	}
+
+	/**
+	 * Allow access
+	 *
+	 * @param string $requester The requesting identifier (Aro).
+	 * @param string $controlled The controlled identifier (Aco).
+	 * @param string $privileges Privileges to allow (defaults to `*`)
+	 * @param integer $value Access type (1 to allow, 0 to deny, null to inherit)
+	 * @return boolean Success
+	 */
+	public static function allow($requester, $controlled, $privileges = "*", $value = 1) {
+		if (!$acl = static::acl($requester, $controlled)) {
+			throw new RuntimeException("Invalid acl node.");
+		}
+
+		$datas = array();
+		$privileges = $privileges == "*" ? static::privileges() : (array) $privileges;
+		$privileges = array_fill_keys($privileges, $value);
+
+		$datas[key(static::relations('Aro')->key())] = $acl['aro'];
+		$datas[key(static::relations('Aco')->key())] = $acl['aco'];
+
+		$options = array();
+		if ($acl['acl']) {
+			$options = array('exists' => true);
+			$datas += $acl['acl'];
+			$privileges += $datas['privileges'];
+		}
+		$privileges = array_filter($privileges, function($val) {return $val !== null;});
+		$datas['privileges'] = json_encode($privileges,  JSON_FORCE_OBJECT);
+		$entity = static::create(array(), $options);
+		$entity->set($datas);
+		return $entity->save();
+	}
+
+	/**
+	 * Deny access
+	 *
+	 * @param string $requester ARO The requesting object identifier.
+	 * @param string $request ACO The controlled object identifier.
+	 * @param string $privileges Privileges to deny (defaults to *)
+	 * @return boolean Success
+	 */
+	public static function deny($requester, $request, $privileges = "*") {
+		return static::allow($requester, $request, $privileges, 0);
+	}
+
+	/**
+	 * Inherit access
+	 *
+	 * @param string $requester ARO The requesting object identifier.
+	 * @param string $request ACO The controlled object identifier.
+	 * @param string $privileges Privileges to inherit (defaults to *)
+	 * @return boolean Success
+	 */
+	public static function inherit($requester, $request, $privileges = "*") {
+		return static::allow($requester, $request, $privileges, null);
+	}
+
+	/**
+	 * Returns the last error array or an empty array if no error.
+	 *
+	 * @return array
+	 */
+	public static function error() {
+		return $this->_error;
+	}
+}
