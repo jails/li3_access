@@ -151,12 +151,12 @@ class AclNode extends \li3_behaviors\data\model\Behaviorable {
 		}
 
 		return array(
-				"{$alias}.{$left}" => array(
-					'<=' => (object) $cond1
-				),
-				"{$alias}.{$right}" => array(
-					'>=' => (object) $cond2
-				)
-			);
+			"{$alias}.{$left}" => array(
+				'<=' => (object) $cond1
+			),
+			"{$alias}.{$right}" => array(
+				'>=' => (object) $cond2
+			)
+		);
 	}
 }
