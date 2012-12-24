@@ -14,8 +14,10 @@ class DbAclTest extends \lithium\test\Unit {
 
 	protected $_model = 'lithium\tests\mocks\core\MockCallable';
 
+	protected $_adapter;
+
 	public function setUp() {
-		$this->adapter = new DbAcl(array(
+		$this->_adapter = new DbAcl(array(
 			'classes' => array(
 				'permission' => $this->_model
 			)
@@ -23,7 +25,7 @@ class DbAclTest extends \lithium\test\Unit {
 	}
 
 	public function testCheck() {
-		$this->adapter->check('root/user/john', 'controller/post/add', array('read', 'create'));
+		$this->_adapter->check('root/user/john', 'controller/post/add', array('read', 'create'));
 		$model = $this->_model;
 		extract($model::$callStatic);
 		$this->assertEqual('check', $method);
@@ -33,7 +35,7 @@ class DbAclTest extends \lithium\test\Unit {
 	}
 
 	public function testGet() {
-		$this->adapter->get('param1', 'param2');
+		$this->_adapter->get('param1', 'param2');
 		$model = $this->_model;
 		extract($model::$callStatic);
 		$this->assertEqual('get', $method);
@@ -41,7 +43,7 @@ class DbAclTest extends \lithium\test\Unit {
 	}
 
 	public function testAllow() {
-		$this->adapter->allow('param1', 'param2', 'param3');
+		$this->_adapter->allow('param1', 'param2', 'param3');
 		$model = $this->_model;
 		extract($model::$callStatic);
 		$this->assertEqual('allow', $method);
@@ -49,7 +51,7 @@ class DbAclTest extends \lithium\test\Unit {
 	}
 
 	public function testDeny() {
-		$this->adapter->deny('param1', 'param2', 'param3');
+		$this->_adapter->deny('param1', 'param2', 'param3');
 		$model = $this->_model;
 		extract($model::$callStatic);
 		$this->assertEqual('allow', $method);
@@ -57,7 +59,7 @@ class DbAclTest extends \lithium\test\Unit {
 	}
 
 	public function testInherit() {
-		$this->adapter->inherit('param1', 'param2', 'param3');
+		$this->_adapter->inherit('param1', 'param2', 'param3');
 		$model = $this->_model;
 		extract($model::$callStatic);
 		$this->assertEqual('allow', $method);
@@ -65,7 +67,7 @@ class DbAclTest extends \lithium\test\Unit {
 	}
 
 	public function testError() {
-		$this->adapter->error('param1', 'param2', 'param3');
+		$this->_adapter->error('param1', 'param2', 'param3');
 		$model = $this->_model;
 		extract($model::$callStatic);
 		$this->assertEqual('error', $method);

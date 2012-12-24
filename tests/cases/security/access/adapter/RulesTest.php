@@ -13,8 +13,10 @@ use li3_access\extensions\adapter\security\access\Rules;
 
 class RulesTest extends \lithium\test\Unit {
 
+	protected $_adapter;
+
 	public function setUp() {
-		$this->adapter = new Rules();
+		$this->_adapter = new Rules();
 	}
 
 	public function tearDown() {}
@@ -23,18 +25,18 @@ class RulesTest extends \lithium\test\Unit {
 		$request = new Request(array('env' => array('REMOTE_ADDR' => '10.0.1.2')));
 
 		$rules = array('allowIp' => array('ip' => '/10\.0\.1\.\d+/'));
-		$result = $this->adapter->check(array(), $request, compact('rules'));
+		$result = $this->_adapter->check(array(), $request, compact('rules'));
 		$this->assertTrue($result);
 
 		$request = new Request(array('env' => array('REMOTE_ADDR' => '10.0.1.255')));
-		$result = $this->adapter->check(array(), $request, compact('rules'));
+		$result = $this->_adapter->check(array(), $request, compact('rules'));
 		$this->assertTrue($result);
 
 		$request = new Request(array('env' => array('REMOTE_ADDR' => '10.0.2.1')));
-		$result = $this->adapter->check(array(), $request, compact('rules'));
+		$result = $this->_adapter->check(array(), $request, compact('rules'));
 		$this->assertFalse($result);
 
-		$result = $this->adapter->error();
+		$result = $this->_adapter->error();
 		$this->assertEqual('Your IP is not allowed to access this area.', $result['message']);
 	}
 
@@ -43,15 +45,15 @@ class RulesTest extends \lithium\test\Unit {
 
 		foreach (array(2, 3, 4) as $i) {
 			$request = new Request(array('env' => array('REMOTE_ADDR' => "10.0.1.{$i}")));
-			$result = $this->adapter->check(array(), $request, compact('rules'));
+			$result = $this->_adapter->check(array(), $request, compact('rules'));
 			$this->assertTrue($result);
 		}
 
 		foreach (array(1, 5, 255) as $i) {
 			$request = new Request(array('env' => array('REMOTE_ADDR' => "10.0.1.{$i}")));
-			$result = $this->adapter->check(array(), $request, compact('rules'));
+			$result = $this->_adapter->check(array(), $request, compact('rules'));
 			$this->assertFalse($result);
-			$result = $this->adapter->error();
+			$result = $this->_adapter->error();
 			$this->assertEqual('Your IP is not allowed to access this area.', $result['message']);
 		}
 	}
@@ -63,7 +65,7 @@ class RulesTest extends \lithium\test\Unit {
 			'ip' => '10.0.1.1'
 		));
 
-		$result = $this->adapter->check(array('username' => 'Nate'), $request, array(
+		$result = $this->_adapter->check(array('username' => 'Nate'), $request, array(
 			'rules' => $rules
 		));
 		$this->assertTrue($result);
@@ -71,25 +73,25 @@ class RulesTest extends \lithium\test\Unit {
 		$expected = array(
 			'message' => 'You are not permitted to access this area.',
 		);
-		$result = $this->adapter->check(array('username' => 'Gwoo'), $request, array(
+		$result = $this->_adapter->check(array('username' => 'Gwoo'), $request, array(
 			'rules' => 'denyAll'
 		));
 		$this->assertFalse($result);
-		$result = $this->adapter->error();
+		$result = $this->_adapter->error();
 		$this->assertEqual($expected, $result);
 
 		$rules = array('allowAnyUser');
 		$expected = array(
 			'message' => 'You must be logged in.'
 		);
-		$result = $this->adapter->check(array(), $request, array('rules' => $rules));
+		$result = $this->_adapter->check(array(), $request, array('rules' => $rules));
 		$this->assertFalse($result);
-		$result = $this->adapter->error();
+		$result = $this->_adapter->error();
 		$this->assertEqual($expected, $result);
 
-		$result = $this->adapter->check(false, $request, array('rules' => $rules));
+		$result = $this->_adapter->check(false, $request, array('rules' => $rules));
 		$this->assertFalse($result);
-		$result = $this->adapter->error();
+		$result = $this->_adapter->error();
 		$this->assertEqual($expected, $result);
 	}
 
@@ -103,7 +105,7 @@ class RulesTest extends \lithium\test\Unit {
 				}
 			)
 		);
-		$result = $this->adapter->check(array('username' => 'Nate'), $request, array(
+		$result = $this->_adapter->check(array('username' => 'Nate'), $request, array(
 			'rules' => $rules
 		));
 		$this->assertTrue($result);
@@ -112,33 +114,33 @@ class RulesTest extends \lithium\test\Unit {
 	public function testNoRules() {
 		$request = new Request();
 		$this->expectException("Missing `'rules'` option.");
-		$result = $this->adapter->check(array(), $request);
+		$result = $this->_adapter->check(array(), $request);
 	}
 
 	public function testInvalidRule() {
 		$request = new Request();
 		$this->expectException('Invalid rule.');
-		$result = $this->adapter->check(array(), $request, array('rules' => 'invalid'));
+		$result = $this->_adapter->check(array(), $request, array('rules' => 'invalid'));
 	}
 
 	public function testGetSetRules() {
 		$request = new Request();
 
-		$this->adapter->rules('testDeny', function() { return false;}, array(
+		$this->_adapter->rules('testDeny', function() { return false;}, array(
 			'message' => 'Access denied.'
 		));
 
 		$expected = array('message' => 'Access denied.');
-		$result = $this->adapter->check(array('username' => 'Tom'), $request, array(
+		$result = $this->_adapter->check(array('username' => 'Tom'), $request, array(
 			'rules' => 'testDeny'
 		));
 		$this->assertFalse($result);
-		$result = $this->adapter->error();
+		$result = $this->_adapter->error();
 		$this->assertEqual($expected, $result);
 
-		$rule = $this->adapter->rules('testDeny');
+		$rule = $this->_adapter->rules('testDeny');
 		$this->assertTrue(is_callable($rule['allow']));
-		$this->assertTrue(is_array($this->adapter->rules()));
+		$this->assertTrue(is_array($this->_adapter->rules()));
 	}
 }
 

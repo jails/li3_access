@@ -35,8 +35,6 @@ class Rules extends \lithium\core\Object {
 
 	/**
 	 * Initializes default rules to use.
-	 *
-	 * @return void
 	 */
 	protected function _init() {
 		$this->_rules += array(

@@ -12,17 +12,19 @@ use li3_access\extensions\adapter\security\access\Simple;
 
 class SimpleTest extends \lithium\test\Unit {
 
+	protected $_adapter;
+
 	public function setUp() {
-		$this->adapter = new Simple();
+		$this->_adapter = new Simple();
 	}
 
 	public function tearDown() {}
 
 	public function testCheck() {
-		$result = $this->adapter->check(array('username' => 'Max'));
+		$result = $this->_adapter->check(array('username' => 'Max'));
 		$this->assertTrue($result);
 
-		$result = $this->adapter->check(false);
+		$result = $this->_adapter->check(false);
 		$this->assertFalse($result);
 	}
 

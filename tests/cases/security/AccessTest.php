@@ -13,17 +13,17 @@ use lithium\tests\mocks\core\MockCallable;
 
 class AccessTest extends \lithium\test\Unit {
 
-	public $adapter;
+	protected $_adapter;
 
 	public function setUp() {
 		Access::reset();
-		$this->adapter = new MockCallable();
+		$this->_adapter = new MockCallable();
 		Access::config(array(
 			'test_access' => array(
-				'object' => $this->adapter
+				'object' => $this->_adapter
 			),
 			'test_access_with_filters' => array(
-				'object' => $this->adapter,
+				'object' => $this->_adapter,
 				'filters' => array(
 					function($self, $params, $chain) {
 						return $chain->next($self, $params, $chain);
