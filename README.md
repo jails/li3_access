@@ -6,8 +6,8 @@ Don't use this in production. It's an early alpha release.
 
 - This plugin needs [li3_behaviors](https://github.com/jails/li3_behaviors) (only if you intend to use the DbAcl adapter).
 - This plugin needs [li3_tree](https://github.com/jails/li3_tree) (only if you intend to use the DbAcl adapter).
-- This plugin needs [li3_fixtures](https://github.com/UnionOfRAD/li3_fixtures) (only if you intend to run tests).
-- This plugin needs [li3_sqltools](https://github.com/UnionOfRAD/li3_sqltools) (only if you intend to run tests).
+- This plugin needs [li3_fixtures](https://github.com/UnionOfRAD/li3_fixtures) (only if you intend to run DbAcl adapter tests).
+- This plugin needs [li3_sqltools](https://github.com/UnionOfRAD/li3_sqltools) (only if you intend to run DbAcl adapter tests).
 
 ## Installation
 
@@ -32,23 +32,26 @@ This plugin provide a couple of adapters for managing access control into your a
 
 ### Simple adapter:
 
-The simple adapter only checks that the passed data is not empty. It's more a "gadget" thas a really usefull adapter.
+The simple adapter only checks that the passed data is not empty.
 
 ```php
 Access::config('simple' => array('adapter' => 'Simple'));
+Access::check('rules', array('username' => 'Max')); //return `true`
+Access::check('rules', true); //return `true`
+Access::check('rules', array()); //return `false`
 ```
 
 ### Rule adapter:
 
-The rule adapter check access from a predefinied/custom closure.
+The rule adapter check access from a predefinied/custom closure. To use this adapter configure `Access` like the following:
 
 ```php
 Access::config('rules' => array('adapter' => 'Rules'));
 ```
 
-There's some predefinied rules : `'allowAll'`, `'denyAll'`, `'allowAnyUser'`, `'allowIp'`.
+The rules adpater already contains the following rules: `'allowAll'`, `'denyAll'`, `'allowAnyUser'`, `'allowIp'`.
 
-you can use it like the following:
+Example of use:
 
 ```php
 $user = Auth::check('auth_config_name');
@@ -61,17 +64,16 @@ Access::check('rules', $user, $request, array('rules' => array('allowAnyUser'));
 Rule with parameters:
 
 ```php
-$rules = array('allowIp' => array('ip' => '/10\.0\.1\.\d+/'));
 Access::check('rules', null, $request,  array(
 	'rules' => array(
 		'allowIp' => array(
-			'ip' => '/10\.0\.1\.\d+/' //parameter for the `'allowIp'` rule.
+			'ip' => '/10\.0\.1\.\d+/' //parameter to pass to the `'allowIp'` closure.
 		)
 	)
 ));
 ```
 
-Adding a custom rule:
+You can add custom rule on `::config()`:
 
 ```php
 Access::config('rules' => array(
@@ -85,7 +87,11 @@ Access::config('rules' => array(
 		)
 	)
 ));
-//or:
+```
+
+or dynamically with:
+
+```php
 Access::rules('rules', 'testDeny', function($requester) { return false; }, array(
 	'message' => 'Access denied.'
 ));
@@ -93,7 +99,7 @@ Access::rules('rules', 'testDeny', function($requester) { return false; }, array
 
 ### DbAcl adapter:
 
-This adapter currently works for SQL databases.
+This adapter currently works for only SQL databases (i.e MySQL, PostgreSQL and Sqlite3).
 
 ```php
 Access::config('acl' => array('adapter' => 'DbAcl'));
@@ -104,9 +110,9 @@ Access control lists, or ACL, handle two main things: things that want stuff, an
 - Access Control Object (Aco), i.e. something that is wanted
 - Access Request Object (Aro), i.e. Something that wants something
 
-And beetween Acos and Aros, there's permissions which define the access privileges.
+And beetween Acos and Aros, there's permissions which define the access privileges beetween Aros and Acos.
 
-Above the MySQL database schema needed to makes things works out of the box:
+Above, the schema needed to makes things works out of the box for a MySQL database:
 
 ```sql
 DROP TABLE IF EXISTS `acos`;
@@ -154,7 +160,7 @@ CREATE TABLE `privileges` (
 
 ```
 
-Of course you need to adapt this schema according your database.
+Of course you need to adapt this schema according your own SQL database.
 
 Once Acos and Aros are correctly defined (see test's fixtures for a better understanding of what Acos and Aros looks like).
 
