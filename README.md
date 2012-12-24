@@ -190,3 +190,6 @@ Access::get('acl', 'user/joe', 'controller/backend');
 ## Greetings
 
 The li3 team, Tom Maiaroto, Weluse, rich97, CakePHP's ACL, Pamela Anderson and all others which make that possible.
+
+## Build status
+[![Build Status](https://secure.travis-ci.org/jails/li3_access.png?branch=master)](http://travis-ci.org/jails/li3_access)
