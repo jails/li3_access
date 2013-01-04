@@ -150,14 +150,6 @@ CREATE TABLE `permissions` (
   PRIMARY KEY (`id`)
 );
 
-
-DROP TABLE IF EXISTS `privileges`;
-CREATE TABLE `privileges` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `name` varchar(32) DEFAULT NULL,
-  PRIMARY KEY (`id`)
-);
-
 ```
 
 Of course you need to adapt this schema according your own SQL database.
@@ -169,10 +161,10 @@ You can add privileges:
 ```php
 Access::allow('acl', 'admin/max', 'controller/backend', array('read', 'create', 'update', 'delete'));
 //or:
-Access::allow('acl', 'admin/max', 'controller/backend', '*');
+Access::allow('acl', 'admin/max', 'controller/backend', 'publish');
 //or:
 $user = User::find('first', array('username' => 'max'));
-Access::allow('acl', $user, 'controller/backend', '*');
+Access::allow('acl', $user, 'controller/backend', array('read', 'create', 'update', 'publish'));
 ```
 
 You can remove privileges:

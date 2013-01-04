@@ -36,8 +36,7 @@ class Permission extends \lithium\data\Model {
 	 */
 	protected $_classes = array(
 		'aro' => 'li3_access\security\access\model\db_acl\Aro',
-		'aco' => 'li3_access\security\access\model\db_acl\Aco',
-		'privilege' => 'li3_access\security\access\model\db_acl\Privilege'
+		'aco' => 'li3_access\security\access\model\db_acl\Aco'
 	);
 
 	/**
@@ -93,24 +92,13 @@ class Permission extends \lithium\data\Model {
 	}
 
 	/**
-	 * Get all valid permission type
-	 *
-	 * @return array
-	 */
-	public static function privileges() {
-		$self = static::_object();
-		$privilege = $self->_classes['privilege'];
-		return $privilege::find('list');
-	}
-
-	/**
 	 * Checks permission access
 	 *
 	 * @param string $requester The requester identifier (Aro).
 	 * @param string $controlled The controlled identifier (Aco).
 	 * @return boolean Success (true if Aro has access to action in Aco, false otherwise)
 	 */
-	public static function check($requester, $controlled, $privileges = "*") {
+	public static function check($requester, $controlled, $privileges) {
 		$self = static::_object();
 		$aro = $self->_classes['aro'];
 		$aco = $self->_classes['aco'];
@@ -120,18 +108,18 @@ class Permission extends \lithium\data\Model {
 		}
 
 		$inherited = array();
-		$required = $privileges == '*' ? static::privileges() : (array) $privileges;
+		$required = (array) $privileges;
 		$count = count($required);
 		$aro_id = key(static::relations('Aro')->key());
 		$aco_id = key(static::relations('Aco')->key());
 		$ids = Set::extract($acoNodes, '/'.$aco::meta('key'));
 		$left = $aco::actsAs('Tree', true, 'left');
 
-		foreach($aroNodes as $node) {
+		foreach ($aroNodes as $node) {
 			$id = $node[$aro::meta('key')];
 			if ($datas = static::_permQuery($id, $ids, $aro_id, $aco_id, $left)) {
 				foreach ($datas as $data) {
-					if(!$privileges = json_decode($data['privileges'], true)) {
+					if (!$privileges = json_decode($data['privileges'], true)) {
 						break;
 					}
 					foreach ($required as $key) {
@@ -184,7 +172,7 @@ class Permission extends \lithium\data\Model {
 				}
 			}
 		}
-		return $privileges += array_fill_keys(static::privileges(), false);
+		return $privileges;
 	}
 
 	/**
@@ -216,17 +204,17 @@ class Permission extends \lithium\data\Model {
 	 *
 	 * @param string $requester The requesting identifier (Aro).
 	 * @param string $controlled The controlled identifier (Aco).
-	 * @param string $privileges Privileges to allow (defaults to `*`)
+	 * @param string $privileges Privileges to allow
 	 * @param integer $value Access type (1 to allow, 0 to deny, null to inherit)
 	 * @return boolean Success
 	 */
-	public static function allow($requester, $controlled, $privileges = "*", $value = 1) {
+	public static function allow($requester, $controlled, $privileges, $value = 1) {
 		if (!$acl = static::acl($requester, $controlled)) {
 			throw new RuntimeException("Invalid acl node.");
 		}
 
 		$datas = array();
-		$privileges = $privileges == "*" ? static::privileges() : (array) $privileges;
+		$privileges = (array) $privileges;
 		$privileges = array_fill_keys($privileges, $value);
 
 		$datas[key(static::relations('Aro')->key())] = $acl['aro'];
@@ -250,10 +238,10 @@ class Permission extends \lithium\data\Model {
 	 *
 	 * @param string $requester ARO The requesting object identifier.
 	 * @param string $request ACO The controlled object identifier.
-	 * @param string $privileges Privileges to deny (defaults to *)
+	 * @param string $privileges Privileges to deny
 	 * @return boolean Success
 	 */
-	public static function deny($requester, $request, $privileges = "*") {
+	public static function deny($requester, $request, $privileges) {
 		return static::allow($requester, $request, $privileges, 0);
 	}
 
@@ -262,10 +250,10 @@ class Permission extends \lithium\data\Model {
 	 *
 	 * @param string $requester ARO The requesting object identifier.
 	 * @param string $request ACO The controlled object identifier.
-	 * @param string $privileges Privileges to inherit (defaults to *)
+	 * @param string $privileges Privileges to inherit
 	 * @return boolean Success
 	 */
-	public static function inherit($requester, $request, $privileges = "*") {
+	public static function inherit($requester, $request, $privileges) {
 		return static::allow($requester, $request, $privileges, null);
 	}
 

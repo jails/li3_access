@@ -27,9 +27,10 @@ class PermissionTest extends \lithium\test\Integration {
 	protected $_fixtures = array(
 		'aco' => 'li3_access\tests\fixture\source\db_acl\AcoFixture',
 		'aro' => 'li3_access\tests\fixture\source\db_acl\AroFixture',
-		'permission' => 'li3_access\tests\fixture\source\db_acl\PermissionFixture',
-		'privilege' => 'li3_access\tests\fixture\source\db_acl\PrivilegeFixture'
+		'permission' => 'li3_access\tests\fixture\source\db_acl\PermissionFixture'
 	);
+
+	protected $_privileges = array('create', 'read', 'update', 'delete');
 
 	/**
 	 * Skip the test if no test database connection available.
@@ -67,13 +68,6 @@ class PermissionTest extends \lithium\test\Integration {
 		Fixtures::reset();
 	}
 
-	public function testPrivileges() {
-		Fixtures::save('db');
-		$result = Permission::privileges();
-		$expected = array('create', 'read', 'update', 'delete');
-		$this->assertEqual(sort($expected), sort($result));
-	}
-
 	public function testAcl() {
 		Fixtures::save('db');
 		$result = Permission::acl('root/users/Peter', 'root/tpsReports/view/current');
@@ -98,7 +92,7 @@ class PermissionTest extends \lithium\test\Integration {
 
 		$aro = 'root/users/Peter';
 		$aco = 'root/tpsReports/view/current';
-		$this->assertFalse(Permission::check($aro, $aco, '*'));
+		$this->assertFalse(Permission::check($aro, $aco, $this->_privileges));
 		$this->assertTrue(Permission::check($aro, $aco, 'create'));
 		$this->assertTrue(Permission::check($aro, $aco, 'read'));
 		$this->assertTrue(Permission::check($aro, $aco, 'update'));
@@ -106,7 +100,7 @@ class PermissionTest extends \lithium\test\Integration {
 
 		$aro = 'root/users/Samantha';
 		$aco = 'root/printers/smash';
-		$this->assertFalse(Permission::check($aro, $aco, '*'));
+		$this->assertFalse(Permission::check($aro, $aco, $this->_privileges));
 		$this->assertTrue(Permission::check($aro, $aco, 'create'));
 		$this->assertTrue(Permission::check($aro, $aco, 'read'));
 		$this->assertFalse(Permission::check($aro, $aco, 'update'));
@@ -137,13 +131,13 @@ class PermissionTest extends \lithium\test\Integration {
 		$aro = 'root/users/Samantha';
 		$aco = 'root/printers/smash';
 		$expected = array('create' => true, 'read' => true, 'update' => false, 'delete' => true);
-		$result = Permission::get($aro, $aco, '*');
+		$result = Permission::get($aro, $aco, $this->_privileges);
 		$this->assertEqual($expected, $result);
 
 		$aro = 'root/users/Peter';
 		$aco = 'root/tpsReports/view/current';
 		$expected = array('create' => true, 'read' => true, 'update' => true, 'delete' => false);
-		$result = Permission::get($aro, $aco, '*');
+		$result = Permission::get($aro, $aco, $this->_privileges);
 		$this->assertEqual($expected, $result);
 	}
 
@@ -165,13 +159,13 @@ class PermissionTest extends \lithium\test\Integration {
 		$this->assertTrue(Permission::check('Micheal', 'tpsReports', array('delete')));
 		$this->assertTrue(Permission::check('Micheal', 'printers', array('create')));
 
-		$this->assertFalse(Permission::check('root/users/Samantha', 'root/tpsReports/view'));
-		$this->assertTrue(Permission::allow('root/users/Samantha', 'root/tpsReports/view', '*'));
+		$this->assertFalse(Permission::check('root/users/Samantha', 'root/tpsReports/view', $this->_privileges));
+		$this->assertTrue(Permission::allow('root/users/Samantha', 'root/tpsReports/view', $this->_privileges));
 		$this->assertTrue(Permission::check('Samantha', 'view', 'read'));
 		$this->assertTrue(Permission::check('root/users/Samantha', 'root/tpsReports/view', 'update'));
 
-		$this->assertFalse(Permission::check('root/users/Samantha', 'root/tpsReports/update'));
-		$this->assertTrue(Permission::allow('root/users/Samantha', 'root/tpsReports/update', '*'));
+		$this->assertFalse(Permission::check('root/users/Samantha', 'root/tpsReports/update', $this->_privileges));
+		$this->assertTrue(Permission::allow('root/users/Samantha', 'root/tpsReports/update', $this->_privileges));
 		$this->assertTrue(Permission::check('Samantha', 'update', 'read'));
 		$this->assertTrue(Permission::check('root/users/Samantha', 'root/tpsReports/update', array('update')));
 		$this->assertTrue(Permission::check('root/users/Samantha', 'root/tpsReports/view', array('update')));
@@ -207,13 +201,13 @@ class PermissionTest extends \lithium\test\Integration {
 			'class' => $_user,
 			'id' => 3
 		);
-		$this->assertFalse(Permission::check($samantha, 'root/tpsReports/view'));
-		$this->assertTrue(Permission::allow($samantha, 'root/tpsReports/view', '*'));
+		$this->assertFalse(Permission::check($samantha, 'root/tpsReports/view', $this->_privileges));
+		$this->assertTrue(Permission::allow($samantha, 'root/tpsReports/view', $this->_privileges));
 		$this->assertTrue(Permission::check($samantha, 'view', 'read'));
 		$this->assertTrue(Permission::check($samantha, 'root/tpsReports/view', 'update'));
 
-		$this->assertFalse(Permission::check($samantha, 'root/tpsReports/update'));
-		$this->assertTrue(Permission::allow($samantha, 'root/tpsReports/update', '*'));
+		$this->assertFalse(Permission::check($samantha, 'root/tpsReports/update', $this->_privileges));
+		$this->assertTrue(Permission::allow($samantha, 'root/tpsReports/update', $this->_privileges));
 		$this->assertTrue(Permission::check($samantha, 'update', 'read'));
 		$this->assertTrue(Permission::check($samantha, 'root/tpsReports/update', array('update')));
 		$this->assertTrue(Permission::check($samantha, 'root/tpsReports/view', array('update')));
@@ -247,13 +241,13 @@ class PermissionTest extends \lithium\test\Integration {
 
 		$samantha = $_user::create();
 		$samantha->id = 3;
-		$this->assertFalse(Permission::check($samantha, 'root/tpsReports/view'));
-		$this->assertTrue(Permission::allow($samantha, 'root/tpsReports/view', '*'));
+		$this->assertFalse(Permission::check($samantha, 'root/tpsReports/view', $this->_privileges));
+		$this->assertTrue(Permission::allow($samantha, 'root/tpsReports/view', $this->_privileges));
 		$this->assertTrue(Permission::check($samantha, 'view', 'read'));
 		$this->assertTrue(Permission::check($samantha, 'root/tpsReports/view', 'update'));
 
-		$this->assertFalse(Permission::check($samantha, 'root/tpsReports/update'));
-		$this->assertTrue(Permission::allow($samantha, 'root/tpsReports/update', '*'));
+		$this->assertFalse(Permission::check($samantha, 'root/tpsReports/update', $this->_privileges));
+		$this->assertTrue(Permission::allow($samantha, 'root/tpsReports/update', $this->_privileges));
 		$this->assertTrue(Permission::check($samantha, 'update', 'read'));
 		$this->assertTrue(Permission::check($samantha, 'root/tpsReports/update', array('update')));
 		$this->assertTrue(Permission::check($samantha, 'root/tpsReports/view', array('update')));
@@ -284,10 +278,10 @@ class PermissionTest extends \lithium\test\Integration {
 		$this->assertTrue(Permission::check('Micheal', 'smash', 'read'));
 		$this->assertTrue(Permission::check('Micheal', 'smash', 'create'));
 		$this->assertTrue(Permission::check('Micheal', 'smash', 'update'));
-		$this->assertFalse(Permission::check('Micheal', 'smash', '*'));
+		$this->assertFalse(Permission::check('Micheal', 'smash', $this->_privileges));
 
-		$this->assertTrue(Permission::check('Samantha', 'refill', '*'));
-		Permission::deny('Samantha', 'refill', '*');
+		$this->assertTrue(Permission::check('Samantha', 'refill', $this->_privileges));
+		Permission::deny('Samantha', 'refill', $this->_privileges);
 		$this->assertFalse(Permission::check('Samantha', 'refill', 'create'));
 		$this->assertFalse(Permission::check('Samantha', 'refill', 'update'));
 		$this->assertFalse(Permission::check('Samantha', 'refill', 'read'));
@@ -304,12 +298,22 @@ class PermissionTest extends \lithium\test\Integration {
 	function testCascadingDeny() {
 		Fixtures::save('db');
 
-		Permission::inherit('Bob', 'root', '*');
+		Permission::inherit('Bob', 'root', $this->_privileges);
 		$this->assertTrue(Permission::check('admin', 'tpsReports', 'delete'));
 		$this->assertTrue(Permission::check('Bob', 'tpsReports', 'delete'));
 		Permission::deny('admin', 'tpsReports', 'delete');
 		$this->assertFalse(Permission::check('admin', 'tpsReports', 'delete'));
 		$this->assertFalse(Permission::check('Bob', 'tpsReports', 'delete'));
+	}
+
+	public function testAllowOnTheFlyPrivilege() {
+		Fixtures::save('db');
+
+		$this->assertFalse(Permission::check('Micheal', 'tpsReports', array('publish')));
+		$this->assertTrue(Permission::allow('Micheal', 'tpsReports', array('publish')));
+		$this->assertTrue(Permission::check('Micheal', 'tpsReports', array('publish')));
+		$this->assertTrue(Permission::check('Micheal', 'root/tpsReports', array('publish')));
+		$this->assertTrue(Permission::check('Micheal', 'root/tpsReports/update', array('publish')));
 	}
 
 	/**
@@ -327,7 +331,7 @@ class PermissionTest extends \lithium\test\Integration {
 		Aco::meta('title', 'alias');
 		$aros = Aro::find('list', array('order' => 'lft'));
 		$acos = Aco::find('list', array('order' => 'lft'));
-		$rights = array('*', 'create', 'read', 'update', 'delete');
+		$rights = array($this->_privileges, 'create', 'read', 'update', 'delete');
 		$permissions['Aros v Acos >'] = $acos;
 		foreach ($aros as $aro) {
 			$row = array();
@@ -335,12 +339,12 @@ class PermissionTest extends \lithium\test\Integration {
 				$perms = '';
 				foreach ($rights as $right) {
 					if (Permission::check($aro, $aco, $right)) {
-						if ($right == '*') {
+						if ($right == $this->_privileges) {
 							$perms .= '****';
 							break;
 						}
 						$perms .= $right[0];
-					} elseif ($right != '*') {
+					} elseif ($right != $this->_privileges) {
 						$perms .= ' ';
 					}
 				}
