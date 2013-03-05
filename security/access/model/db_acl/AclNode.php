@@ -8,7 +8,10 @@
 
 namespace li3_access\security\access\model\db_acl;
 
-class AclNode extends \li3_behaviors\data\model\Behaviorable {
+use li3_behaviors\data\model\Behaviors;
+
+class AclNode extends \lithium\data\Model {
+	use Behaviors;
 
 	/**
 	 * ACL models use the Tree behavior

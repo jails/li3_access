@@ -4,6 +4,7 @@ Don't use this in production. It's an early alpha release.
 
 ## Requirements
 
+- **PHP 5.4**
 - This plugin needs [li3_behaviors](https://github.com/jails/li3_behaviors) (only if you intend to use the DbAcl adapter).
 - This plugin needs [li3_tree](https://github.com/jails/li3_tree) (only if you intend to use the DbAcl adapter).
 - This plugin needs [li3_fixtures](https://github.com/UnionOfRAD/li3_fixtures) (only if you intend to run DbAcl adapter tests).
