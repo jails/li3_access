@@ -43,7 +43,7 @@ class AclNode extends \lithium\data\Model {
 		extract(static::actsAs('Tree', true), EXTR_SKIP);
 
 		if (is_string($ref)) {
-			$with = 'Parent';
+			$w = $with = 'Parent';
 			$i = 0;
 			$paths = explode('/', $ref);
 			$start = $paths[0];
@@ -66,8 +66,8 @@ class AclNode extends \lithium\data\Model {
 
 			foreach ($paths as $i => $path) {
 				$j = $i - 1;
-				$with .= ".{$with}";
-				$query['with'][$with] = array(
+				$w .= ".{$with}";
+				$query['with'][$w] = array(
 					'alias' => "{$name}{$i}",
 					'constraints' => (object) array(
 						"{$name}{$i}.{$left}" => array('>' => "{$name}{$j}.{$left}"),
