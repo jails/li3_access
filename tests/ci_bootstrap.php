@@ -40,7 +40,7 @@ Libraries::add('li3_sqltools');
 /**
  * Setup test database
  */
-Connections::add('test', array(
+Connections::add('default', array(
 	'type' => 'database',
 	'adapter' => 'MySql',
 	'host' => 'localhost',

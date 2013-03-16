@@ -17,7 +17,7 @@ use li3_access\security\access\model\db_acl\Permission;
 
 class PermissionTest extends \lithium\test\Integration {
 
-	protected $_connection = 'test';
+	protected $_connection = 'default';
 
 	protected $_models = array(
 		'_user' => 'li3_access\tests\fixture\model\blog\User',
@@ -65,7 +65,7 @@ class PermissionTest extends \lithium\test\Integration {
 		foreach($this->_models as $key => $class){
 			$class::reset();
 		}
-		Fixtures::reset();
+		Fixtures::clear('db');
 	}
 
 	public function testAcl() {
