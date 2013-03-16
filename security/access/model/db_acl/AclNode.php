@@ -18,16 +18,16 @@ class AclNode extends \lithium\data\Model {
 	 *
 	 * @var array
 	 */
-	protected $_actsAs = array('Tree');
+	protected $_actsAs = ['Tree'];
 
 	/**
 	 * Meta-information
 	 *
 	 * @var array
 	 */
-	protected $_meta = array(
-		'acl' => array('class' => 'class', 'alias' => 'alias', 'key' => 'fk_id')
-	);
+	protected $_meta = [
+		'acl' => ['class' => 'class', 'alias' => 'alias', 'key' => 'fk_id']
+	];
 
 	/**
 	 * Retrieves the Acl node for this model.
@@ -49,40 +49,40 @@ class AclNode extends \lithium\data\Model {
 			$start = $paths[0];
 			unset($paths[0]);
 
-			$query = array(
+			$query = [
 				'alias' => $name,
-				'fields' => array($name),
-				'with' => array(
-					$with => array(
+				'fields' => [$name],
+				'with' => [
+					$with => [
 						'alias' => "{$name}0",
-						'constraints' => (object) array(
-							"{$name}0.{$alias}" => (object) $db->value($start, array(
+						'constraints' => (object) [
+							"{$name}0.{$alias}" => (object) $db->value($start, [
 								'type' => 'string'
-							))
-						)
-					)),
+							])
+						]
+					]],
 				'order' => "{$name}.{$left} DESC"
-			);
+			];
 
 			foreach ($paths as $i => $path) {
 				$j = $i - 1;
 				$w .= ".{$with}";
-				$query['with'][$w] = array(
+				$query['with'][$w] = [
 					'alias' => "{$name}{$i}",
-					'constraints' => (object) array(
-						"{$name}{$i}.{$left}" => array('>' => "{$name}{$j}.{$left}"),
-						"{$name}{$i}.{$right}" => array('<' => "{$name}{$j}.{$right}"),
-						"{$name}{$i}.{$alias}" => $db->value($path, array('type' => 'string')),
+					'constraints' => (object) [
+						"{$name}{$i}.{$left}" => ['>' => "{$name}{$j}.{$left}"],
+						"{$name}{$i}.{$right}" => ['<' => "{$name}{$j}.{$right}"],
+						"{$name}{$i}.{$alias}" => $db->value($path, ['type' => 'string']),
 						"{$name}{$j}." . static::meta('key') => "{$name}{$i}.{$parent}"
-					)
-				);
+					]
+				];
 			}
 
-			$query['conditions'] = array(
+			$query['conditions'] = [
 				static::_wrapCond($db, $name, $i, $left, $right)
-			);
+			];
 
-			$result = static::find('all', $query + array('return' => 'array'));
+			$result = static::find('all', $query + ['return' => 'array']);
 
 			$paths = array_values($paths);
 
@@ -97,12 +97,12 @@ class AclNode extends \lithium\data\Model {
 			if ($ref instanceof $self->_classes['entity']) {
 				$model = $ref->model();
 				$id = $model::meta('key');
-				$ref = array($class => $model, $id => $ref->$id);
+				$ref = [$class => $model, $id => $ref->$id];
 			}
 		}
 
 		if ($ref && is_array($ref) && isset($ref[$class])) {
-			$conditions = array();
+			$conditions = [];
 			$model = $ref[$class];
 			$id = $model::meta('key');
 			if (isset($ref[$id])) {
@@ -116,19 +116,19 @@ class AclNode extends \lithium\data\Model {
 
 			$constraints = (object) static::_wrapCond($db, $name, '0', $left, $right, false);
 
-			$query = array(
+			$query = [
 				'conditions' => $conditions,
-				'fields' => array($name),
-				'with' => array(
-					'Parent' => array(
+				'fields' => [$name],
+				'with' => [
+					'Parent' => [
 						'alias' => "{$name}0",
 						'constraints' => $constraints
-					)
-				),
+					]
+				],
 				'order' => "{$name}.{$left} DESC"
-			);
+			];
 
-			return static::find('all', $query + array('return' => 'array'));
+			return static::find('all', $query + ['return' => 'array']);
 		}
 		return false;
 	}
@@ -153,13 +153,13 @@ class AclNode extends \lithium\data\Model {
 			$cond2 = $db->name($cond2);
 		}
 
-		return array(
-			"{$alias}.{$left}" => array(
+		return [
+			"{$alias}.{$left}" => [
 				'<=' => (object) $cond1
-			),
-			"{$alias}.{$right}" => array(
+			],
+			"{$alias}.{$right}" => [
 				'>=' => (object) $cond2
-			)
-		);
+			]
+		];
 	}
 }

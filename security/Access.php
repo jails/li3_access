@@ -17,7 +17,7 @@ class Access extends \lithium\core\Adaptable {
 	 *
 	 * @var object `Collection` of authentication configurations.
 	 */
-	protected static $_configurations = array();
+	protected static $_configurations = [];
 
 	/**
 	 * Libraries::locate() compatible path to adapters for this class.
@@ -36,7 +36,7 @@ class Access extends \lithium\core\Adaptable {
 	 * @param array $options An array of options.
 	 * @return boolean `true` if access is granted, `false otherwise`.
 	 */
-	public static function check($name, $user, $request, $options = array()) {
+	public static function check($name, $user, $request, $options = []) {
 		if (($config = static::_config($name)) === null) {
 			throw new ConfigException("Configuration `{$name}` has not been defined.");
 		}
@@ -64,7 +64,7 @@ class Access extends \lithium\core\Adaptable {
 			throw new ConfigException("Configuration `{$name}` has not been defined.");
 		}
 		$filter = function($self, $params) use ($name, $method) {
-			return call_user_func_array(array($self::adapter($name), $method), $params);
+			return call_user_func_array([$self::adapter($name), $method], $params);
 		};
 		return static::_filter(__FUNCTION__, $params, $filter, (array) $config['filters']);
 	}

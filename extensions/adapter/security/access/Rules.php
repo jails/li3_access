@@ -17,47 +17,47 @@ class Rules extends \lithium\core\Object {
 	 *
 	 * @var array
 	 */
-	protected $_autoConfig = array('rules');
+	protected $_autoConfig = ['rules'];
 
 	/**
 	 * Rules are named closures that must either return `true` or `false`.
 	 *
 	 * @var array
 	 */
-	protected $_rules = array();
+	protected $_rules = [];
 
 	/**
 	 * Last error message
 	 *
 	 * @var array $_error
 	 */
-	protected $_error = array();
+	protected $_error = [];
 
 	/**
 	 * Initializes default rules to use.
 	 */
 	protected function _init() {
-		$this->_rules += array(
-			'allowAll' => array(
+		$this->_rules += [
+			'allowAll' => [
 				'allow' => function() {
 					return true;
 				}
-			),
-			'denyAll' => array(
+			],
+			'denyAll' => [
 				'allow' => function() {
 					return false;
 				}
-			),
-			'allowAnyUser' => array(
+			],
+			'allowAnyUser' => [
 				'message' => 'You must be logged in.',
 				'allow' => function($requester) {
 					return $requester ? true : false;
 				}
-			),
-			'allowIp' => array(
+			],
+			'allowIp' => [
 				'message' => 'Your IP is not allowed to access this area.',
 				'allow' => function($requester, $request, $options) {
-					$options += array('ip' => false);
+					$options += ['ip' => false];
 					if (is_string($options['ip']) && strpos($options['ip'], '/') === 0) {
 						return (boolean) preg_match($options['ip'], $request->env('REMOTE_ADDR'));
 					}
@@ -66,8 +66,8 @@ class Rules extends \lithium\core\Object {
 					}
 					return $request->env('REMOTE_ADDR') == $options['ip'];
 				}
-			)
-		);
+			]
+		];
 	}
 
 	/**
@@ -79,15 +79,15 @@ class Rules extends \lithium\core\Object {
 	 * @param array $options Options array to pass to the rule closure.
 	 * @return boolean `true` if access is ok, `false` otherwise.
 	 */
-	public function check($requester, $request, array $options = array()) {
+	public function check($requester, $request, array $options = []) {
 		if (!isset($options['rules'])) {
 			throw new RuntimeException("Missing `'rules'` option.");
 		}
 
-		$this->_error = array();
+		$this->_error = [];
 		$rules = (array) $options['rules'];
 
-		$options = array();
+		$options = [];
 		foreach ($rules as $name => $rule) {
 
 			if (is_string($rule) && isset($this->_rules[$rule])) {
@@ -105,8 +105,8 @@ class Rules extends \lithium\core\Object {
 				throw new RuntimeException("Invalid rule.");
 			}
 
-			$closure = !is_array($closure) ? array('allow' => $closure) : $closure;
-			$closure += array('message' => 'You are not permitted to access this area.');
+			$closure = !is_array($closure) ? ['allow' => $closure] : $closure;
+			$closure += ['message' => 'You are not permitted to access this area.'];
 
 			if (call_user_func($closure['allow'], $requester, $request, $options) === false) {
 				unset($closure['allow']);
@@ -127,12 +127,12 @@ class Rules extends \lithium\core\Object {
 	 *        - third parameter : an options array
 	 * @return mixed Either an array of rule closures, a single rule closure, or `null`.
 	 */
-	public function rules($name = null, $rule = null, $options = array()) {
+	public function rules($name = null, $rule = null, $options = []) {
 		if (!$name) {
 			return $this->_rules;
 		}
 		if ($rule) {
-			$this->_rules[$name] = array('allow' => $rule) + $options;
+			$this->_rules[$name] = ['allow' => $rule] + $options;
 			return;
 		}
 		return isset($this->_rules[$name]) ? $this->_rules[$name] : null;

@@ -10,7 +10,7 @@ namespace li3_access\tests\fixture\model\blog;
 
 class Group extends \lithium\data\Model {
 
-	protected $_meta = array('key' => 'id');
+	protected $_meta = ['key' => 'id'];
 
-	public $hasMany = array('User');
+	public $hasMany = ['User'];
 }

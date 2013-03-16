@@ -19,14 +19,14 @@ class DbAcl extends \lithium\core\Object {
 	 *
 	 * @var array
 	 */
-	protected $_classes = array(
+	protected $_classes = [
 		'permission' => 'li3_access\security\access\model\db_acl\Permission'
-	);
+	];
 	/**
 	 * @see lithium\data\Model::_autoConfig()
 	 * @var array
 	 */
-	protected $_autoConfig = array('classes');
+	protected $_autoConfig = ['classes'];
 
 	/**
 	 * Check permission access

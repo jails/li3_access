@@ -18,41 +18,41 @@ class AccessTest extends \lithium\test\Unit {
 	public function setUp() {
 		Access::reset();
 		$this->_adapter = new MockCallable();
-		Access::config(array(
-			'test_access' => array(
+		Access::config([
+			'test_access' => [
 				'object' => $this->_adapter
-			),
-			'test_access_with_filters' => array(
+			],
+			'test_access_with_filters' => [
 				'object' => $this->_adapter,
-				'filters' => array(
+				'filters' => [
 					function($self, $params, $chain) {
 						return $chain->next($self, $params, $chain);
 					},
 					function($self, $params, $chain) {
 						return 'Filter executed.';
 					}
-				)
-			)
-		));
+				]
+			]
+		]);
 	}
 
 	public function tearDown() {Access::reset();}
 
 	public function testCheck() {
-		$result = Access::check('test_access', array('username' => 'Gwoo'), false);
+		$result = Access::check('test_access', ['username' => 'Gwoo'], false);
 		extract($result);
 		$this->assertEqual('check', $method);
-		$this->assertEqual(array(array('username' => 'Gwoo'), false, array()), $params);
+		$this->assertEqual([['username' => 'Gwoo'], false, []], $params);
 	}
 
 	public function testFilters() {
-		$result = Access::check('test_access_with_filters', false, false, array());
+		$result = Access::check('test_access_with_filters', false, false, []);
 		$this->assertEqual('Filter executed.', $result);
 	}
 
 	public function testNoConfigurations() {
 		Access::reset();
-		$this->assertIdentical(array(), Access::config());
+		$this->assertIdentical([], Access::config());
 		$this->expectException("Configuration `test_no_config` has not been defined.");
 		Access::check('test_no_config', false, false);
 	}

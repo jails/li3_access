@@ -17,7 +17,7 @@ class Permission extends \lithium\data\Model {
 	 * @see lithium\data\Model::_autoConfig()
 	 * @var array
 	 */
-	protected $_autoConfig = array(
+	protected $_autoConfig = [
 		'meta',
 		'schema',
 		'classes',
@@ -26,7 +26,7 @@ class Permission extends \lithium\data\Model {
 		'initializers',
 		'init',
 		'forbid'
-	);
+	];
 
 	/**
 	 * Class dependencies. For details on extending or replacing a class,
@@ -34,17 +34,17 @@ class Permission extends \lithium\data\Model {
 	 *
 	 * @var array
 	 */
-	protected $_classes = array(
+	protected $_classes = [
 		'aro' => 'li3_access\security\access\model\db_acl\Aro',
 		'aco' => 'li3_access\security\access\model\db_acl\Aco'
-	);
+	];
 
 	/**
 	 * Model belongsTo relations.
 	 *
 	 * @var array
 	 */
-	public $belongsTo = array('Aro', 'Aco');
+	public $belongsTo = ['Aro', 'Aco'];
 
 	/**
 	 * Forbid error message
@@ -55,7 +55,7 @@ class Permission extends \lithium\data\Model {
 	/**
 	 * @var array $_error Last error message
 	 */
-	protected $_error = array();
+	protected $_error = [];
 
 	/**
 	 * Get the acl array between an Aro and an Aco
@@ -73,22 +73,22 @@ class Permission extends \lithium\data\Model {
 			return false;
 		}
 
-		$acl = static::find('first', array(
-				'conditions' => array(
+		$acl = static::find('first', [
+				'conditions' => [
 					key(static::relations('Aro')->key()) => $aroNode[0]['id'],
 					key(static::relations('Aco')->key()) => $acoNode[0]['id']
-				),
+				],
 				'return' => 'array'
-		));
+		]);
 		if (isset($acl[0]['privileges'])) {
 			$acl[0]['privileges'] = json_decode($acl[0]['privileges'], true);
 		}
 
-		return array(
+		return [
 			'aro' => $aroNode[0]['id'],
 			'aco' => $acoNode[0]['id'],
-			'acl' => isset($acl[0]) ? $acl[0]: array()
-		);
+			'acl' => isset($acl[0]) ? $acl[0]: []
+		];
 	}
 
 	/**
@@ -107,7 +107,7 @@ class Permission extends \lithium\data\Model {
 			return false;
 		}
 
-		$inherited = array();
+		$inherited = [];
 		$required = (array) $privileges;
 		$count = count($required);
 		$aro_id = key(static::relations('Aro')->key());
@@ -125,7 +125,7 @@ class Permission extends \lithium\data\Model {
 					foreach ($required as $key) {
 						if (isset($privileges[$key])) {
 							if(!$privileges[$key]) {
-								$self->_error = array('message' => $self->_forbid);
+								$self->_error = ['message' => $self->_forbid];
 								return false;
 							} else {
 								$inherited[$key] = 1;
@@ -133,13 +133,13 @@ class Permission extends \lithium\data\Model {
 						}
 					}
 					if (count($inherited) == $count) {
-						$self->_error = array();
+						$self->_error = [];
 						return true;
 					}
 				}
 			}
 		}
-		$self->_error = array('message' => $self->_forbid);
+		$self->_error = ['message' => $self->_forbid];
 		return false;
 	}
 
@@ -158,7 +158,7 @@ class Permission extends \lithium\data\Model {
 			return false;
 		}
 
-		$privileges = array();
+		$privileges = [];
 		$aro_id = key(static::relations('Aro')->key());
 		$aco_id = key(static::relations('Aco')->key());
 		$left = $aco::actsAs('Tree', true, 'left');
@@ -186,17 +186,17 @@ class Permission extends \lithium\data\Model {
 	 * @return array Loaded permissions
 	 */
 	protected static function _permQuery($id, $ids, $aro_id, $aco_id, $left) {
-		return static::find('all', array(
+		return static::find('all', [
 			'alias' => 'Permission',
 			'fields' => 'Permission',
-			'conditions' => array(
+			'conditions' => [
 				'Permission.' . $aro_id => $id,
 				'Permission.' . $aco_id => $ids
-			),
+			],
 			'order' => "Aco.{$left} DESC",
-			'with' => array('Aco' => array('alias' => 'Aco')),
+			'with' => ['Aco' => ['alias' => 'Aco']],
 			'return' => 'array'
-		));
+		]);
 	}
 
 	/**
@@ -213,22 +213,22 @@ class Permission extends \lithium\data\Model {
 			throw new RuntimeException("Invalid acl node.");
 		}
 
-		$datas = array();
+		$datas = [];
 		$privileges = (array) $privileges;
 		$privileges = array_fill_keys($privileges, $value);
 
 		$datas[key(static::relations('Aro')->key())] = $acl['aro'];
 		$datas[key(static::relations('Aco')->key())] = $acl['aco'];
 
-		$options = array();
+		$options = [];
 		if ($acl['acl']) {
-			$options = array('exists' => true);
+			$options = ['exists' => true];
 			$datas += $acl['acl'];
 			$privileges += $datas['privileges'];
 		}
 		$privileges = array_filter($privileges, function($val) {return $val !== null;});
 		$datas['privileges'] = json_encode($privileges,  JSON_FORCE_OBJECT);
-		$entity = static::create(array(), $options);
+		$entity = static::create([], $options);
 		$entity->set($datas);
 		return $entity->save();
 	}

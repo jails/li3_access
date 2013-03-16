@@ -19,24 +19,24 @@ class AclNodeTest extends \lithium\test\Integration {
 
 	protected $_connection = 'default';
 
-	protected $_models = array(
+	protected $_models = [
 		'_user' => 'li3_access\tests\fixture\model\blog\User',
 		'_group' => 'li3_access\tests\fixture\model\blog\Group'
-	);
+	];
 
-	protected $_fixtures = array(
+	protected $_fixtures = [
 		'aco' => 'li3_access\tests\fixture\source\db_acl\AcoFixture',
 		'aro' => 'li3_access\tests\fixture\source\db_acl\AroFixture'
-	);
+	];
 
 	/**
 	 * Skip the test if no test database connection available.
 	 */
 	public function skip() {
-		$dbConfig = Connections::get($this->_connection, array('config' => true));
+		$dbConfig = Connections::get($this->_connection, ['config' => true]);
 		$isAvailable = (
 			$dbConfig &&
-			Connections::get($this->_connection)->isConnected(array('autoConnect' => true))
+			Connections::get($this->_connection)->isConnected(['autoConnect' => true])
 		);
 		$this->skipIf(!$isAvailable, "No {$this->_connection} connection available.");
 
@@ -49,13 +49,13 @@ class AclNodeTest extends \lithium\test\Integration {
 	}
 
 	public function setUp() {
-		Fixtures::config(array(
-			'db' => array(
+		Fixtures::config([
+			'db' => [
 				'adapter' => 'Connection',
 				'connection' => $this->_connection,
 				'fixtures' => $this->_fixtures
-			)
-		));
+			]
+		]);
 	}
 
 	public function tearDown() {
@@ -69,47 +69,47 @@ class AclNodeTest extends \lithium\test\Integration {
 		Fixtures::save('db');
 
 		$aro = Aro::create();
-		$aro->set(array('alias' => 'Chotchkey'));
+		$aro->set(['alias' => 'Chotchkey']);
 		$this->assertTrue($aro->save());
 
 		$key = Aro::key();
 		$parent = $aro->$key;
 
 		$aro = Aro::create();
-		$aro->set(array('parent_id' => $parent, 'alias' => 'Joanna'));
+		$aro->set(['parent_id' => $parent, 'alias' => 'Joanna']);
 		$this->assertTrue($aro->save());
 
 		$aro = Aro::create();
-		$aro->set(array('parent_id' => $parent, 'alias' => 'Stapler'));
+		$aro->set(['parent_id' => $parent, 'alias' => 'Stapler']);
 		$this->assertTrue($aro->save());
 
 		$root = Aro::node('root');
 		$parent = $root[0][Aco::key()];
 
 		$aco = Aco::create();
-		$aco->set(array('parent_id' => $parent, 'alias' => 'Drinks'));
+		$aco->set(['parent_id' => $parent, 'alias' => 'Drinks']);
 		$this->assertTrue($aco->save());
 
 		$aco = Aco::create();
-		$aco->set(array('parent_id' => $parent, 'alias' => 'PiecesOfFlair'));
+		$aco->set(['parent_id' => $parent, 'alias' => 'PiecesOfFlair']);
 		$this->assertTrue($aco->save());
 	}
 
 	function testCreateWithParent() {
 		Fixtures::save('db');
 
-		$parent = Aro::find('first', array('conditions' => array('alias' => 'Peter')));
+		$parent = Aro::find('first', ['conditions' => ['alias' => 'Peter']]);
 		$key = Aro::key();
 		$aro = Aro::create();
-		$aro->set(array(
+		$aro->set([
 			'alias' => 'Subordinate',
 			'model' => 'User',
 			'fk_id' => 7,
 			'parent_id' => $parent->$key
-		));
+		]);
 		$aro->save();
 
-		$result = Aro::find('first', array('conditions' => array('alias' => 'Subordinate')));
+		$result = Aro::find('first', ['conditions' => ['alias' => 'Subordinate']]);
 		$this->assertEqual(16, $result->lft);
 		$this->assertEqual(17, $result->rght);
 	}
@@ -121,7 +121,7 @@ class AclNodeTest extends \lithium\test\Integration {
 		$result2 = Set::extract(Aco::node('printers/refill'), '/id');
 		$result3 = Set::extract(Aco::node('refill'), '/id');
 
-		$expected = array('9', '6', '1');
+		$expected = ['9', '6', '1'];
 		$this->assertEqual($expected, $result1);
 		$this->assertEqual($expected, $result2);
 		$this->assertEqual($expected, $result3);
@@ -133,81 +133,81 @@ class AclNodeTest extends \lithium\test\Integration {
 		$this->assertFalse($result);
 
 		$result = Aro::node('root/users/Samantha');
-		$expected = array(
-			array(
+		$expected = [
+			[
 				'id' => '7', 'parent_id' => '4', 'class' => $_user,
 				'fk_id' => 3, 'alias' => 'Samantha', 'lft' => 11, 'rght' => 12
-			),
-			array(
+			],
+			[
 				'id' => '4', 'parent_id' => '1', 'class' => $_group,
 				'fk_id' => 3, 'alias' => 'users', 'lft' => 10, 'rght' => 19
-			),
-			array(
+			],
+			[
 				'id' => '1', 'parent_id' => null, 'class' => null,
 				'fk_id' => null, 'alias' => 'root', 'lft' => 1, 'rght' => 20
-			)
-		);
+			]
+		];
 		$this->assertEqual($expected, $result);
 
 		$result = Aco::node('root/tpsReports/view/current');
-		$expected = array(
-			array(
+		$expected = [
+			[
 				'id' => '4', 'parent_id' => '3', 'class' => null,
 				'fk_id' => null, 'alias' => 'current', 'lft' => 4, 'rght' => 5
-			),
-			array(
+			],
+			[
 				'id' => '3', 'parent_id' => '2', 'class' => null,
 				'fk_id' => null, 'alias' => 'view', 'lft' => 3, 'rght' => 6
-			),
-			array(
+			],
+			[
 				'id' => '2', 'parent_id' => '1', 'class' => null,
 				'fk_id' => null, 'alias' => 'tpsReports', 'lft' => 2, 'rght' => 9
-			),
-			array(
+			],
+			[
 				'id' => '1', 'parent_id' => null, 'class' => null,
 				'fk_id' => null, 'alias' => 'root', 'lft' => 1, 'rght' => 20
-			)
-		);
+			]
+		];
 		$this->assertEqual($expected, $result);
 	}
 
 	public function testNodeArrayFind() {
 		Fixtures::save('db');
 		extract($this->_models);
-		$_user::config(array('meta' => array('connection' => false)));
-		$result = Set::extract(Aro::node(array('class' => $_user, 'id' => '1')), '/id');
-		$expected = array('5', '2', '1');
+		$_user::config(['meta' => ['connection' => false]]);
+		$result = Set::extract(Aro::node(['class' => $_user, 'id' => '1']), '/id');
+		$expected = ['5', '2', '1'];
 		$this->assertEqual($expected, $result);
 
-		$result = Set::extract(Aro::node(array('class' => $_user, 'fk_id' => '1')), '/id');
-		$expected = array('5', '2', '1');
+		$result = Set::extract(Aro::node(['class' => $_user, 'fk_id' => '1']), '/id');
+		$expected = ['5', '2', '1'];
 		$this->assertEqual($expected, $result);
 
-		$_group::config(array('meta' => array('connection' => false)));
-		$result = Set::extract(Aro::node(array('class' => $_group, 'id' => '1')), '/id');
-		$expected = array('2', '1');
+		$_group::config(['meta' => ['connection' => false]]);
+		$result = Set::extract(Aro::node(['class' => $_group, 'id' => '1']), '/id');
+		$expected = ['2', '1'];
 		$this->assertEqual($expected, $result);
 
-		$result = Set::extract(Aro::node(array('class' => $_group, 'fk_id' => '1')), '/id');
-		$expected = array('2', '1');
+		$result = Set::extract(Aro::node(['class' => $_group, 'fk_id' => '1']), '/id');
+		$expected = ['2', '1'];
 		$this->assertEqual($expected, $result);
 	}
 
 	public function testNodeEntity() {
 		Fixtures::save('db');
 		extract($this->_models);
-		$_user::config(array('meta' => array('connection' => false)));
+		$_user::config(['meta' => ['connection' => false]]);
 		$user = $_user::create();
 		$user->id = 1;
 		$result = Set::extract(Aro::node($user), '/id');
-		$expected = array('5', '2', '1');
+		$expected = ['5', '2', '1'];
 		$this->assertEqual($expected, $result);
 
-		$_group::config(array('meta' => array('connection' => false)));
+		$_group::config(['meta' => ['connection' => false]]);
 		$group = $_group::create();
 		$group->id = 1;
 		$result = Set::extract(Aro::node($group), '/id');
-		$expected = array('2', '1');
+		$expected = ['2', '1'];
 		$this->assertEqual($expected, $result);
 	}
 

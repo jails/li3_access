@@ -10,14 +10,14 @@ namespace li3_access\security\access\model\db_acl;
 
 class Aro extends \li3_access\security\access\model\db_acl\AclNode {
 
-	public $belongsTo = array(
-		'Parent' => array(
+	public $belongsTo = [
+		'Parent' => [
 			'key' => 'parent_id',
 			'to' => 'li3_access\security\access\model\db_acl\Aro'
-	));
+	]];
 
-	public $hasMany = array('Permission' => array('key' => 'aro_id'));
+	public $hasMany = ['Permission' => ['key' => 'aro_id']];
 
-	public $hasAndBelongsToMany = array('Aco' => array('via' => 'Permission'));
+	public $hasAndBelongsToMany = ['Aco' => ['via' => 'Permission']];
 
 }

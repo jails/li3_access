@@ -10,8 +10,8 @@ namespace li3_access\tests\fixture\model\blog;
 
 class User extends \lithium\data\Model {
 
-	protected $_meta = array('key' => 'id');
+	protected $_meta = ['key' => 'id'];
 
-	public $hasMany = array('Post');
-	public $belongsTo = array('Group');
+	public $hasMany = ['Post'];
+	public $belongsTo = ['Group'];
 }

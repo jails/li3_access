@@ -17,21 +17,21 @@ class DbAclTest extends \lithium\test\Unit {
 	protected $_adapter;
 
 	public function setUp() {
-		$this->_adapter = new DbAcl(array(
-			'classes' => array(
+		$this->_adapter = new DbAcl([
+			'classes' => [
 				'permission' => $this->_model
-			)
-		));
+			]
+		]);
 	}
 
 	public function testCheck() {
-		$this->_adapter->check('root/user/john', 'controller/post/add', array('read', 'create'));
+		$this->_adapter->check('root/user/john', 'controller/post/add', ['read', 'create']);
 		$model = $this->_model;
 		extract($model::$callStatic);
 		$this->assertEqual('check', $method);
-		$this->assertEqual(array(
-			'root/user/john', 'controller/post/add', array('read', 'create')
-		), $params);
+		$this->assertEqual([
+			'root/user/john', 'controller/post/add', ['read', 'create']
+		], $params);
 	}
 
 	public function testGet() {
@@ -39,7 +39,7 @@ class DbAclTest extends \lithium\test\Unit {
 		$model = $this->_model;
 		extract($model::$callStatic);
 		$this->assertEqual('get', $method);
-		$this->assertEqual(array('param1', 'param2'), $params);
+		$this->assertEqual(['param1', 'param2'], $params);
 	}
 
 	public function testAllow() {
@@ -47,7 +47,7 @@ class DbAclTest extends \lithium\test\Unit {
 		$model = $this->_model;
 		extract($model::$callStatic);
 		$this->assertEqual('allow', $method);
-		$this->assertEqual(array('param1', 'param2', 'param3', 1), $params);
+		$this->assertEqual(['param1', 'param2', 'param3', 1], $params);
 	}
 
 	public function testDeny() {
@@ -55,7 +55,7 @@ class DbAclTest extends \lithium\test\Unit {
 		$model = $this->_model;
 		extract($model::$callStatic);
 		$this->assertEqual('allow', $method);
-		$this->assertEqual(array('param1', 'param2', 'param3', -1), $params);
+		$this->assertEqual(['param1', 'param2', 'param3', -1], $params);
 	}
 
 	public function testInherit() {
@@ -63,7 +63,7 @@ class DbAclTest extends \lithium\test\Unit {
 		$model = $this->_model;
 		extract($model::$callStatic);
 		$this->assertEqual('allow', $method);
-		$this->assertEqual(array('param1', 'param2', 'param3', 0), $params);
+		$this->assertEqual(['param1', 'param2', 'param3', 0], $params);
 	}
 
 	public function testError() {
@@ -71,7 +71,7 @@ class DbAclTest extends \lithium\test\Unit {
 		$model = $this->_model;
 		extract($model::$callStatic);
 		$this->assertEqual('error', $method);
-		$this->assertEqual(array(), $params);
+		$this->assertEqual([], $params);
 	}
 }
 

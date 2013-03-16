@@ -21,7 +21,7 @@ class SimpleTest extends \lithium\test\Unit {
 	public function tearDown() {}
 
 	public function testCheck() {
-		$result = $this->_adapter->check(array('username' => 'Max'));
+		$result = $this->_adapter->check(['username' => 'Max']);
 		$this->assertTrue($result);
 
 		$result = $this->_adapter->check(false);
@@ -29,7 +29,7 @@ class SimpleTest extends \lithium\test\Unit {
 	}
 
 	public function testFilter() {
-		$set = array('key1' => 'val1', 'key2' => 'val2', 'key3' => 'val3');
+		$set = ['key1' => 'val1', 'key2' => 'val2', 'key3' => 'val3'];
 	}
 }
 
