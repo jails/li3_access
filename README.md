@@ -1,5 +1,13 @@
 # Access control adapters
 
+This is forked from [jails/li3_access](https://github.com/jails/li3_access)
+
+You can find synced repo at `master` branch
+
+And PHP 5.3 compatible port at `php-5.3` branch (default branch of this fork)
+
+---
+
 Don't use this in production. It's an early alpha release.
 
 ## Requirements
