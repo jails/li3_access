@@ -8,7 +8,6 @@ Don't use this in production. It's an early alpha release.
 - This plugin needs [li3_behaviors](https://github.com/jails/li3_behaviors) (only if you intend to use the DbAcl adapter).
 - This plugin needs [li3_tree](https://github.com/jails/li3_tree) (only if you intend to use the DbAcl adapter).
 - This plugin needs [li3_fixtures](https://github.com/UnionOfRAD/li3_fixtures) (only if you intend to run DbAcl adapter tests).
-- This plugin needs [li3_sqltools](https://github.com/UnionOfRAD/li3_sqltools) (only if you intend to run DbAcl adapter tests).
 
 ## Installation
 
@@ -36,10 +35,10 @@ This plugin provide a couple of adapters for managing access control into your a
 The simple adapter only checks that the passed data is not empty.
 
 ```php
-Access::config('simple' => array('adapter' => 'Simple'));
-Access::check('rules', array('username' => 'Max')); //return `true`
+Access::config('simple' => ['adapter' => 'Simple']);
+Access::check('rules', ['username' => 'Max']); //return `true`
 Access::check('rules', true); //return `true`
-Access::check('rules', array()); //return `false`
+Access::check('rules', []); //return `false`
 ```
 
 ### Rule adapter:
@@ -47,7 +46,7 @@ Access::check('rules', array()); //return `false`
 The rule adapter check access from a predefinied/custom closure. To use this adapter configure `Access` like the following:
 
 ```php
-Access::config('rules' => array('adapter' => 'Rules'));
+Access::config('rules', ['adapter' => 'Rules']);
 ```
 
 The rules adpater already contains the following rules: `'allowAll'`, `'denyAll'`, `'allowAnyUser'`, `'allowIp'`.
@@ -56,46 +55,46 @@ Example of use:
 
 ```php
 $user = Auth::check('auth_config_name');
-Access::check('rules', $user, $request, array('rules' => array('allowAnyUser'));
+Access::check('rules', $user, $request, ['rules' => ['allowAnyUser']]);
 
-$user = User::find('first', array('username' => 'psychic'));
-Access::check('rules', $user, $request, array('rules' => array('allowAnyUser'));
+$user = User::find('first', ['username' => 'psychic']);
+Access::check('rules', $user, $request, ['rules' => ['allowAnyUser']]);
 ```
 
 Rule with parameters:
 
 ```php
-Access::check('rules', null, $request,  array(
-	'rules' => array(
-		'allowIp' => array(
+Access::check('rules', null, $request,  [
+	'rules' => [
+		'allowIp' => [
 			'ip' => '/10\.0\.1\.\d+/' //parameter to pass to the `'allowIp'` closure.
-		)
-	)
-));
+		]
+	]
+]);
 ```
 
 You can add custom rule on `::config()`:
 
 ```php
-Access::config('rules' => array(
+Access::config('rules' => [
 	'adapter' => 'Rules',
-	'rules' => array(
-		'testDeny' => array(
+	'rules' => [
+		'testDeny' => [
 			'message' => 'Access denied.',
 			'allow' => function($requester) {
 				return false;
 			}
-		)
-	)
-));
+		]
+	]
+]);
 ```
 
 or dynamically with:
 
 ```php
-Access::rules('rules', 'testDeny', function($requester) { return false; }, array(
+Access::rules('rules', 'testDeny', function($requester) { return false; }, [
 	'message' => 'Access denied.'
-));
+]);
 ```
 
 ### DbAcl adapter:
@@ -103,7 +102,7 @@ Access::rules('rules', 'testDeny', function($requester) { return false; }, array
 This adapter currently works for only SQL databases (i.e MySQL, PostgreSQL and Sqlite3).
 
 ```php
-Access::config('acl' => array('adapter' => 'DbAcl'));
+Access::config('acl' => ['adapter' => 'DbAcl']);
 ```
 
 Access control lists, or ACL, handle two main things: things that want stuff, and things that are wanted. This is usually represented by:
@@ -160,24 +159,24 @@ Once Acos and Aros are correctly defined (see test's fixtures for a better under
 You can add privileges:
 
 ```php
-Access::allow('acl', 'admin/max', 'controller/backend', array('read', 'create', 'update', 'delete'));
+Access::allow('acl', 'admin/max', 'controller/backend', ['read', 'create', 'update', 'delete']);
 //or:
 Access::allow('acl', 'admin/max', 'controller/backend', 'publish');
 //or:
-$user = User::find('first', array('username' => 'max'));
-Access::allow('acl', $user, 'controller/backend', array('read', 'create', 'update', 'publish'));
+$user = User::find('first', ['username' => 'max']);
+Access::allow('acl', $user, 'controller/backend', ['read', 'create', 'update', 'publish']);
 ```
 
 You can remove privileges:
 
 ```php
-Access::deny('acl', 'user/joe', 'controller/backend', array('delete'));
+Access::deny('acl', 'user/joe', 'controller/backend', ['delete']);
 ```
 
 Use `Access::check()` to check some privileges:
 
 ```php
-Access::check('acl', 'user/joe', 'controller/backend', array('delete'));
+Access::check('acl', 'user/joe', 'controller/backend', ['delete']);
 ```
 
 Or `Access::get()` for recovering all privileges for an Aro/Aco:
