@@ -132,7 +132,7 @@ class Permission extends \lithium\data\Model {
 							}
 						}
 					}
-					if (count($inherited) == $count) {
+					if (count($inherited) === $count) {
 						$self->_error = array();
 						return true;
 					}

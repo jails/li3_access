@@ -84,8 +84,9 @@ class AclNode extends \li3_behaviors\data\model\Behaviorable {
 			$paths = array_values($paths);
 
 			if (!isset($result[0]) ||
-					($paths && $result[0][$alias] != $paths[count($paths) - 1]) ||
-					(!$paths && $result[0][$alias] != $start)) {
+				($paths && $result[0][$alias] !== $paths[count($paths) - 1]) ||
+				(!$paths && $result[0][$alias] !== $start)
+			) {
 				return false;
 			}
 			return $result;

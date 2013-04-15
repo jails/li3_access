@@ -64,7 +64,7 @@ class Rules extends \lithium\core\Object {
 					if (is_array($options['ip'])) {
 						return in_array($request->env('REMOTE_ADDR'), $options['ip']);
 					}
-					return $request->env('REMOTE_ADDR') == $options['ip'];
+					return $request->env('REMOTE_ADDR') === $options['ip'];
 				}
 			)
 		);
