@@ -17,7 +17,7 @@ use li3_access\security\access\model\db_acl\Aro;
 
 class AclNodeTest extends \lithium\test\Integration {
 
-	protected $_connection = 'default';
+	protected $_connection = 'test';
 
 	protected $_models = [
 		'_user' => 'li3_access\tests\fixture\model\blog\User',

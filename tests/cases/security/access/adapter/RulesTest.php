@@ -101,7 +101,7 @@ class RulesTest extends \lithium\test\Unit {
 			[
 				'message' => 'Access denied.',
 				'allow' => function($user, $request, $options) {
-					return $user['username'] == 'Nate';
+					return $user['username'] === 'Nate';
 				}
 			]
 		];
