@@ -39,7 +39,7 @@ Libraries::add('li3_fixtures');
 /**
  * Setup test database
  */
-Connections::add('default', array(
+Connections::add('test', array(
 	'type' => 'database',
 	'adapter' => 'MySql',
 	'host' => 'localhost',
