@@ -35,7 +35,6 @@ Libraries::add('li3_access', array('default' => true));
 Libraries::add('li3_tree');
 Libraries::add('li3_behaviors');
 Libraries::add('li3_fixtures');
-Libraries::add('li3_sqltools');
 
 /**
  * Setup test database
