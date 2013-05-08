@@ -80,14 +80,14 @@ class Permission extends \lithium\data\Model {
 				),
 				'return' => 'array'
 		));
-		if (isset($acl[0]['privileges'])) {
-			$acl[0]['privileges'] = json_decode($acl[0]['privileges'], true);
+		if (isset($acl['privileges'])) {
+			$acl['privileges'] = json_decode($acl['privileges'], true);
 		}
 
 		return array(
 			'aro' => $aroNode[0]['id'],
 			'aco' => $acoNode[0]['id'],
-			'acl' => isset($acl[0]) ? $acl[0]: array()
+			'acl' => isset($acl) ? $acl: array()
 		);
 	}
 
