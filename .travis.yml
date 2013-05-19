@@ -6,7 +6,7 @@ before_script:
   - mkdir config
   - cp tests/ci_bootstrap.php config/bootstrap.php
   - mkdir ../libraries
-  - git clone --branch=dev --depth=100 --quiet git://github.com/UnionOfRAD/lithium.git ../libraries/lithium
+  - git clone --branch=master --depth=100 --quiet git://github.com/UnionOfRAD/lithium.git ../libraries/lithium
   - git clone --branch=master --depth=100 --quiet git://github.com/UnionOfRAD/li3_fixtures.git ../libraries/li3_fixtures
   - git clone --branch=master --depth=100 --quiet git://github.com/jails/li3_behaviors.git ../libraries/li3_behaviors
   - git clone --branch=master --depth=100 --quiet git://github.com/jails/li3_tree.git ../libraries/li3_tree
