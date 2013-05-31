@@ -103,7 +103,10 @@ class Permission extends \lithium\data\Model {
 		$aro = $self->_classes['aro'];
 		$aco = $self->_classes['aco'];
 
-		if (!(($aroNodes = $aro::node($requester)) && ($acoNodes = $aco::node($controlled)))) {
+		if (!(
+			($aroNodes = $aro::node($requester, false)) &&
+			($acoNodes = $aco::node($controlled, false))
+		)) {
 			return false;
 		}
 
@@ -154,7 +157,10 @@ class Permission extends \lithium\data\Model {
 		$aro = $self->_classes['aro'];
 		$aco = $self->_classes['aco'];
 
-		if (!(($aroNodes = $aro::node($requester)) && ($acoNodes = $aco::node($controlled)))) {
+		if (!(
+			($aroNodes = $aro::node($requester, false)) &&
+			($acoNodes = $aco::node($controlled, false))
+		)) {
 			return false;
 		}
 

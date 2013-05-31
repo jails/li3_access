@@ -125,6 +125,18 @@ class PermissionTest extends \lithium\test\Integration {
 		$this->assertFalse(Permission::check('Lumbergh', 'smash', 'foobar'));
 	}
 
+	public function testCheckOnUnexistingNode() {
+		Fixtures::save('db');
+
+		$aro = 'root/users/Peter';
+		$aco = 'root/tpsReports/view/current/unexisting_node';
+		$this->assertFalse(Permission::check($aro, $aco, $this->_privileges));
+		$this->assertTrue(Permission::check($aro, $aco, 'create'));
+		$this->assertTrue(Permission::check($aro, $aco, 'read'));
+		$this->assertTrue(Permission::check($aro, $aco, 'update'));
+		$this->assertFalse(Permission::check($aro, $aco, 'delete'));
+	}
+
 	function testGet() {
 		Fixtures::save('db');
 

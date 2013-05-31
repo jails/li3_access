@@ -35,7 +35,7 @@ class AclNode extends \lithium\data\Model {
 	 * @param mixed $ref Array with 'model' and 'fk_id', model object, or string value.
 	 * @return array Nodes founded in database, `false` otherwise.
 	 */
-	public static function node($ref = null) {
+	public static function node($ref = null, $strict = true) {
 		$db = static::connection();
 		$name = static::meta('name');
 
@@ -64,6 +64,8 @@ class AclNode extends \lithium\data\Model {
 				'order' => "{$name}.{$left} DESC"
 			];
 
+			$conditions = [static::_wrapCond($db, $name, 0, $left, $right)];
+
 			foreach ($paths as $i => $path) {
 				$j = $i - 1;
 				$w .= ".{$with}";
@@ -76,20 +78,22 @@ class AclNode extends \lithium\data\Model {
 						"{$name}{$j}." . static::meta('key') => "{$name}{$i}.{$parent}"
 					]
 				];
+				$conditions[] = static::_wrapCond($db, $name, $i, $left, $right);
 			}
 
-			$query['conditions'] = [
-				static::_wrapCond($db, $name, $i, $left, $right)
-			];
+			$query['conditions'] = ['OR' => $conditions];
 
 			$result = static::find('all', $query + ['return' => 'array']);
 
 			$paths = array_values($paths);
 
-			if (!isset($result[0]) ||
+			if (!isset($result[0])) {
+				return false;
+			}
+			if ($strict && (
 				($paths && $result[0][$alias] !== $paths[count($paths) - 1]) ||
 				(!$paths && $result[0][$alias] !== $start)
-			) {
+			)) {
 				return false;
 			}
 			return $result;
@@ -155,11 +159,13 @@ class AclNode extends \lithium\data\Model {
 		}
 
 		return [
-			"{$alias}.{$left}" => [
-				'<=' => (object) $cond1
-			],
-			"{$alias}.{$right}" => [
-				'>=' => (object) $cond2
+			'AND' => [
+				"{$alias}.{$left}" => [
+					'<=' => (object) $cond1
+				],
+				"{$alias}.{$right}" => [
+					'>=' => (object) $cond2
+				]
 			]
 		];
 	}
