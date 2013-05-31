@@ -65,7 +65,7 @@ class AclNodeTest extends \lithium\test\Integration {
 		Fixtures::clear('db');
 	}
 
-	function testCreate() {
+	public function testCreate() {
 		Fixtures::save('db');
 
 		$aro = Aro::create();
@@ -95,7 +95,7 @@ class AclNodeTest extends \lithium\test\Integration {
 		$this->assertTrue($aco->save());
 	}
 
-	function testCreateWithParent() {
+	public function testCreateWithParent() {
 		Fixtures::save('db');
 
 		$parent = Aro::find('first', array('conditions' => array('alias' => 'Peter')));
@@ -114,7 +114,7 @@ class AclNodeTest extends \lithium\test\Integration {
 		$this->assertEqual(17, $result->rght);
 	}
 
-	function testNode() {
+	public function testNode() {
 		Fixtures::save('db');
 		extract($this->_models);
 		$result1 = Set::extract(Aco::node('root/printers/refill'), '/id');
@@ -211,4 +211,11 @@ class AclNodeTest extends \lithium\test\Integration {
 		$this->assertEqual($expected, $result);
 	}
 
+	public function testNodeWithNonStrictMode() {
+		Fixtures::save('db');
+		extract($this->_models);
+		$result = Set::extract(Aco::node('root/printers/refill/unexisting', false), '/id');
+		$expected = ['9', '6', '1'];
+		$this->assertEqual($expected, $result);
+	}
 }

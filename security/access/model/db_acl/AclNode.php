@@ -32,7 +32,7 @@ class AclNode extends \li3_behaviors\data\model\Behaviorable {
 	 * @param mixed $ref Array with 'model' and 'fk_id', model object, or string value.
 	 * @return array Nodes founded in database, `false` otherwise.
 	 */
-	public static function node($ref = null) {
+	public static function node($ref = null, $strict = true) {
 		$db = static::connection();
 		$name = static::meta('name');
 
@@ -73,20 +73,22 @@ class AclNode extends \li3_behaviors\data\model\Behaviorable {
 						"{$name}{$j}." . static::meta('key') => "{$name}{$i}.{$parent}"
 					)
 				);
+				$conditions[] = static::_wrapCond($db, $name, $i, $left, $right);
 			}
 
-			$query['conditions'] = array(
-				static::_wrapCond($db, $name, $i, $left, $right)
-			);
+			$query['conditions'] = array('OR' => $conditions);
 
 			$result = static::find('all', $query + array('return' => 'array'));
 
 			$paths = array_values($paths);
 
-			if (!isset($result[0]) ||
+			if (!isset($result[0])) {
+				return false;
+			}
+			if ($strict && (
 				($paths && $result[0][$alias] !== $paths[count($paths) - 1]) ||
 				(!$paths && $result[0][$alias] !== $start)
-			) {
+			)) {
 				return false;
 			}
 			return $result;
@@ -152,11 +154,13 @@ class AclNode extends \li3_behaviors\data\model\Behaviorable {
 		}
 
 		return array(
-			"{$alias}.{$left}" => array(
-				'<=' => (object) $cond1
-			),
-			"{$alias}.{$right}" => array(
-				'>=' => (object) $cond2
+			'AND' => array(
+				"{$alias}.{$left}" => array(
+					'<=' => (object) $cond1
+				),
+				"{$alias}.{$right}" => array(
+					'>=' => (object) $cond2
+				)
 			)
 		);
 	}
