@@ -61,6 +61,8 @@ class AclNode extends \li3_behaviors\data\model\Behaviorable {
 				'order' => "{$name}.{$left} DESC"
 			);
 
+			$conditions = array(static::_wrapCond($db, $name, 0, $left, $right));
+
 			foreach ($paths as $i => $path) {
 				$j = $i - 1;
 				$w .= ".{$with}";

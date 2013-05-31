@@ -215,7 +215,7 @@ class AclNodeTest extends \lithium\test\Integration {
 		Fixtures::save('db');
 		extract($this->_models);
 		$result = Set::extract(Aco::node('root/printers/refill/unexisting', false), '/id');
-		$expected = ['9', '6', '1'];
+		$expected = array('9', '6', '1');
 		$this->assertEqual($expected, $result);
 	}
 }
