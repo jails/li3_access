@@ -25,6 +25,7 @@ class PermissionTest extends \lithium\test\Integration {
 	];
 
 	protected $_fixtures = [
+		'user' => 'li3_access\tests\fixture\source\blog\UserFixture',
 		'aco' => 'li3_access\tests\fixture\source\db_acl\AcoFixture',
 		'aro' => 'li3_access\tests\fixture\source\db_acl\AroFixture',
 		'permission' => 'li3_access\tests\fixture\source\db_acl\PermissionFixture'
@@ -189,7 +190,6 @@ class PermissionTest extends \lithium\test\Integration {
 	function testArrayAllow() {
 		Fixtures::save('db');
 		extract($this->_models);
-		$_user::config(['meta' => ['connection' => false]]);
 		$micheal = [
 			'class' => $_user,
 			'id' => 4
@@ -232,7 +232,6 @@ class PermissionTest extends \lithium\test\Integration {
 	function testEntityAllow() {
 		Fixtures::save('db');
 		extract($this->_models);
-		$_user::config(['meta' => ['connection' => false]]);
 		$micheal = $_user::create();
 		$micheal->id = 4;
 
