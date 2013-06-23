@@ -25,6 +25,7 @@ class PermissionTest extends \lithium\test\Integration {
 	);
 
 	protected $_fixtures = array(
+		'user' => 'li3_access\tests\fixture\source\blog\UserFixture',
 		'aco' => 'li3_access\tests\fixture\source\db_acl\AcoFixture',
 		'aro' => 'li3_access\tests\fixture\source\db_acl\AroFixture',
 		'permission' => 'li3_access\tests\fixture\source\db_acl\PermissionFixture'

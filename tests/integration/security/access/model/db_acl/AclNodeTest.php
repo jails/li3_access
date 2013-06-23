@@ -25,6 +25,8 @@ class AclNodeTest extends \lithium\test\Integration {
 	);
 
 	protected $_fixtures = array(
+		'user' => 'li3_access\tests\fixture\source\blog\UserFixture',
+		'group' => 'li3_access\tests\fixture\source\blog\GroupFixture',
 		'aco' => 'li3_access\tests\fixture\source\db_acl\AcoFixture',
 		'aro' => 'li3_access\tests\fixture\source\db_acl\AroFixture'
 	);
@@ -174,16 +176,14 @@ class AclNodeTest extends \lithium\test\Integration {
 	public function testNodeArrayFind() {
 		Fixtures::save('db');
 		extract($this->_models);
-		$_user::config(array('meta' => array('connection' => false)));
 		$result = Set::extract(Aro::node(array('class' => $_user, 'id' => '1')), '/id');
-		$expected = array('5', '2', '1');
+		$expected = ['5', '2', '1'];
 		$this->assertEqual($expected, $result);
 
 		$result = Set::extract(Aro::node(array('class' => $_user, 'fk_id' => '1')), '/id');
 		$expected = array('5', '2', '1');
 		$this->assertEqual($expected, $result);
 
-		$_group::config(array('meta' => array('connection' => false)));
 		$result = Set::extract(Aro::node(array('class' => $_group, 'id' => '1')), '/id');
 		$expected = array('2', '1');
 		$this->assertEqual($expected, $result);
@@ -196,14 +196,12 @@ class AclNodeTest extends \lithium\test\Integration {
 	public function testNodeEntity() {
 		Fixtures::save('db');
 		extract($this->_models);
-		$_user::config(array('meta' => array('connection' => false)));
 		$user = $_user::create();
 		$user->id = 1;
 		$result = Set::extract(Aro::node($user), '/id');
 		$expected = array('5', '2', '1');
 		$this->assertEqual($expected, $result);
 
-		$_group::config(array('meta' => array('connection' => false)));
 		$group = $_group::create();
 		$group->id = 1;
 		$result = Set::extract(Aro::node($group), '/id');
