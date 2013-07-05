@@ -12,10 +12,10 @@ class UserFixture extends \li3_fixtures\test\Fixture {
 
 	protected $_model = 'li3_access\tests\fixture\model\blog\User';
 
-	protected $_fields = [
-		'id' => ['type' => 'id'],
-		'name' => ['type' => 'string']
-	];
+	protected $_fields = array(
+		'id' => array('type' => 'id'),
+		'name' => array('type' => 'string')
+	);
 }
 
 ?>

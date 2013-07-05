@@ -177,7 +177,7 @@ class AclNodeTest extends \lithium\test\Integration {
 		Fixtures::save('db');
 		extract($this->_models);
 		$result = Set::extract(Aro::node(array('class' => $_user, 'id' => '1')), '/id');
-		$expected = ['5', '2', '1'];
+		$expected = array('5', '2', '1');
 		$this->assertEqual($expected, $result);
 
 		$result = Set::extract(Aro::node(array('class' => $_user, 'fk_id' => '1')), '/id');

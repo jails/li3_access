@@ -12,11 +12,11 @@ class PostFixture extends \li3_fixtures\test\Fixture {
 
 	protected $_model = 'li3_access\tests\fixture\model\blog\Post';
 
-	protected $_fields = [
-		'id' => ['type' => 'id'],
-		'title' => ['type' => 'string'],
-		'body' => ['type' => 'text']
-	];
+	protected $_fields = array(
+		'id' => array('type' => 'id'),
+		'title' => array('type' => 'string'),
+		'body' => array('type' => 'text')
+	);
 }
 
 ?>
