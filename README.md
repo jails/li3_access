@@ -81,7 +81,7 @@ Access::config('rules' => [
 	'rules' => [
 		'testDeny' => [
 			'message' => 'Access denied.',
-			'allow' => function($requester) {
+			'rule' => function($requester) {
 				return false;
 			}
 		]

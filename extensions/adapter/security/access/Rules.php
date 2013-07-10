@@ -17,7 +17,7 @@ class Rules extends \lithium\core\Object {
 	 *
 	 * @var array
 	 */
-	protected $_autoConfig = ['rules'];
+	protected $_autoConfig = ['rules', 'defaults', 'allowAny', 'user'];
 
 	/**
 	 * Rules are named closures that must either return `true` or `false`.
@@ -25,6 +25,29 @@ class Rules extends \lithium\core\Object {
 	 * @var array
 	 */
 	protected $_rules = [];
+
+	/**
+	 * Lists a subset of rules defined in `$_rules` which should be checked by default on every
+	 * call to `check()` (unless overridden by passed options).
+	 *
+	 * @var array
+	 */
+	protected $_defaults = [];
+
+	/**
+	 * Default access checks.
+	 * If set to `true`, any_ access rule passes will return successful
+	 *
+	 * @var array
+	 */
+	protected $_allowAny = false;
+
+	/**
+	 * A closure used for retrieving the default current user if set.
+	 *
+	 * @var Closure
+	 */
+	protected $_user = null;
 
 	/**
 	 * Last error message
@@ -37,26 +60,27 @@ class Rules extends \lithium\core\Object {
 	 * Initializes default rules to use.
 	 */
 	protected function _init() {
+		parent::_init();
 		$this->_rules += [
 			'allowAll' => [
-				'allow' => function() {
+				'rule' => function() {
 					return true;
 				}
 			],
 			'denyAll' => [
-				'allow' => function() {
+				'rule' => function() {
 					return false;
 				}
 			],
 			'allowAnyUser' => [
 				'message' => 'You must be logged in.',
-				'allow' => function($requester) {
-					return $requester ? true : false;
+				'rule' => function($user) {
+					return $user ? true : false;
 				}
 			],
 			'allowIp' => [
 				'message' => 'Your IP is not allowed to access this area.',
-				'allow' => function($requester, $request, $options) {
+				'rule' => function($user, $request, $options) {
 					$options += ['ip' => false];
 					if (is_string($options['ip']) && strpos($options['ip'], '/') === 0) {
 						return (boolean) preg_match($options['ip'], $request->env('REMOTE_ADDR'));
@@ -73,46 +97,73 @@ class Rules extends \lithium\core\Object {
 	/**
 	 * The check method
 	 *
-	 * @param mixed $requester The user data array that holds all necessary information about
+	 * @param mixed $user The user data array that holds all necessary information about
 	 *        the user requesting access or `false`.
 	 * @param object $request The `Request` object.
 	 * @param array $options Options array to pass to the rule closure.
 	 * @return boolean `true` if access is ok, `false` otherwise.
 	 */
-	public function check($requester, $request, array $options = []) {
-		if (!isset($options['rules'])) {
+	public function check($user, $request, array $options = []) {
+		$defaults = ['rules' => $this->_defaults, 'allowAny' => $this->_allowAny];
+		$options += $defaults;
+
+		if (empty($options['rules'])) {
 			throw new RuntimeException("Missing `'rules'` option.");
 		}
 
-		$this->_error = [];
 		$rules = (array) $options['rules'];
+		$this->_error = [];
+		$params = array_diff_key($options, $defaults);
 
-		$options = [];
+		if (!$user && is_callable($this->_user)) {
+			$user = $this->_user;
+			$user = $user();
+		}
+
 		foreach ($rules as $name => $rule) {
 
-			if (is_string($rule) && isset($this->_rules[$rule])) {
-				$closure = $this->_rules[$rule];
-			} elseif (is_array($rule)) {
-				if (is_string($name) && isset($this->_rules[$name])) {
-					$closure = $this->_rules[$name];
-					$options = $rule;
-				} elseif (isset($rule['allow'])) {
-					$closure = $rule;
-				}
-			} elseif (is_callable($rule)) {
-				$closure = $rule;
-			} else {
-				throw new RuntimeException("Invalid rule.");
-			}
+			$result = $this->_check($user, $request, $name, $rule, $params);
 
-			$closure = !is_array($closure) ? ['allow' => $closure] : $closure;
-			$closure += ['message' => 'You are not permitted to access this area.'];
-
-			if (call_user_func($closure['allow'], $requester, $request, $options) === false) {
-				unset($closure['allow']);
-				$this->_error = $closure;
+			if ($result === false && !$options['allowAny']) {
 				return false;
+			} elseif ($options['allowAny']) {
+				return true;
 			}
+		}
+		return true;
+	}
+
+	/**
+	 * Helper for `Rules::check()`.
+	 */
+	protected function _check($user, $request, $name, $rule, $params) {
+		$message = 'You are not permitted to access this area.';
+
+		if (is_string($rule) && isset($this->_rules[$rule])) {
+			$name = $rule;
+			$closure = $this->_rules[$rule];
+		} elseif (is_array($rule)) {
+			if (is_string($name) && isset($this->_rules[$name])) {
+				$params += $rule;
+				$closure = $this->_rules[$name];
+			} else {
+				$closure = $rule;
+			}
+		} elseif (is_callable($rule)) {
+			$closure = $rule;
+		} else {
+			throw new RuntimeException("Invalid rule.");
+		}
+
+		if (!is_callable($closure)) {
+			$message = isset($closure['message']) ? $closure['message'] : $message;
+			$closure = isset($closure['rule']) ? $closure['rule'] : $closure;
+		}
+
+		$params += compact('message');
+		if(!call_user_func($closure, $user, $request, $params)) {
+			$this->_error[$name] = $params['message'];
+			return false;
 		}
 		return true;
 	}
@@ -122,7 +173,7 @@ class Rules extends \lithium\core\Object {
 	 *
 	 * @param string $name The rule name to get/set. if `null` all rules are returned.
 	 * @param function $rule A Closure which be called with the following parameter :
-	 *        - first parameter : the requester (i.e. generally a user data array)
+	 *        - first parameter : the user
 	 *        - second parameter : a `Request` instance
 	 *        - third parameter : an options array
 	 * @return mixed Either an array of rule closures, a single rule closure, or `null`.
@@ -132,7 +183,7 @@ class Rules extends \lithium\core\Object {
 			return $this->_rules;
 		}
 		if ($rule) {
-			$this->_rules[$name] = ['allow' => $rule] + $options;
+			$this->_rules[$name] = ['rule' => $rule] + $options;
 			return;
 		}
 		return isset($this->_rules[$name]) ? $this->_rules[$name] : null;
