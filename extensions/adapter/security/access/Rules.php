@@ -99,8 +99,9 @@ class Rules extends \lithium\core\Object {
 	 * The check method
 	 *
 	 * @param mixed $user The user data array that holds all necessary information about
-	 *        the user requesting access or `false`.
-	 * @param object $request The `Request` object.
+	 *        the user requesting access. If set to `null`, the default `Rules::_user()`
+	 *        will be used.
+	 * @param object $request The requested object.
 	 * @param array $options Options array to pass to the rule closure.
 	 * @return boolean `true` if access is ok, `false` otherwise.
 	 */
@@ -116,9 +117,8 @@ class Rules extends \lithium\core\Object {
 		$this->_error = array();
 		$params = array_diff_key($options, $defaults);
 
-		if (!$user && is_callable($this->_user)) {
-			$user = $this->_user;
-			$user = $user();
+		if (!isset($user) && is_callable($this->_user)) {
+			$user = $this->_user->__invoke();
 		}
 
 		foreach ($rules as $name => $rule) {
@@ -184,7 +184,7 @@ class Rules extends \lithium\core\Object {
 			return $this->_rules;
 		}
 		if ($rule) {
-			$this->_rules[$name] = array('rule' => $rule) + $options;
+			$this->_rules[$name] = compact('rule') + $options;
 			return;
 		}
 		return isset($this->_rules[$name]) ? $this->_rules[$name] : null;
