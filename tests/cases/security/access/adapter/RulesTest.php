@@ -213,6 +213,33 @@ class RulesTest extends \lithium\test\Unit {
 		$allowAny = false;
 		$result = $this->_adapter->check([], null, compact('rules', 'allowAny'));
 		$this->assertFalse($result);
+
+		$rules = ['allowAnyUser', 'allowAll'];
+		$allowAny = true;
+		$result = $this->_adapter->check([], null, compact('rules', 'allowAny'));
+		$this->assertTrue($result);
+
+		$allowAny = false;
+		$result = $this->_adapter->check([], null, compact('rules', 'allowAny'));
+		$this->assertFalse($result);
+
+		$rules = ['allowAnyUser'];
+		$allowAny = true;
+		$result = $this->_adapter->check([], null, compact('rules', 'allowAny'));
+		$this->assertFalse($result);
+
+		$allowAny = false;
+		$result = $this->_adapter->check([], null, compact('rules', 'allowAny'));
+		$this->assertFalse($result);
+
+		$rules = ['allowAll'];
+		$allowAny = true;
+		$result = $this->_adapter->check([], null, compact('rules', 'allowAny'));
+		$this->assertTrue($result);
+
+		$allowAny = false;
+		$result = $this->_adapter->check([], null, compact('rules', 'allowAny'));
+		$this->assertTrue($result);
 	}
 
 	public function testPatternBasedIpMatching() {

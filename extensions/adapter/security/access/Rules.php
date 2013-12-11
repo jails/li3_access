@@ -126,11 +126,12 @@ class Rules extends \lithium\core\Object {
 
 			if ($result === false && !$options['allowAny']) {
 				return false;
-			} elseif ($options['allowAny']) {
+			}
+			if ($result === true && $options['allowAny']) {
 				return true;
 			}
 		}
-		return true;
+		return !$options['allowAny'];
 	}
 
 	/**
